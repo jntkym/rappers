@@ -6,5 +6,6 @@ Automatic rap lyric generation tool
 # Usage #
 ## Construct corpus ##
 ```
-python getlyrics.py -v
+# pip install beautifulsoup
+python getlyrics.py -v > output.tsv
 ```
