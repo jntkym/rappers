@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 
 u"""歌詞コーパスの取得
-
-
 """
 
 import argparse
@@ -26,7 +24,6 @@ def init_logger():
 
 def getSimilarArtist(artist):
   u"""類似アーティストのリストを取得
-
   Last.fm APIを使用
   """
   params = {"method":"artist.getSimilar", "artist":artist,
@@ -68,7 +65,6 @@ def getArtistId(artist):
 
 def getLyricUrlList(artist):
   u"""アーティストのすべての歌詞ページのUrlを取得
-
   j-lyrics.net
   """
   artist_id = getArtistId(artist)
@@ -87,7 +83,6 @@ def getLyricUrlList(artist):
 
 def getLyricText(url):
   u"""歌詞を取得して返す
-
   """
   r = requests.get(url)
   soup = BeautifulSoup(r.content)
