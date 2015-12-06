@@ -139,5 +139,3 @@ if __name__ == '__main__':
                       help="verbose output")
   args = parser.parse_args()
   main(args)
-
-  
