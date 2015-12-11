@@ -74,16 +74,19 @@ def is_cjk(char):
     return any([range["from"] <= ord(char) <= range["to"] for range in ranges])
 
 def get_cjk_characters(cjk_string):
-    i = 0
-    character_list=[]
-    while i<len(cjk_string):
-        if is_cjk(cjk_string[i]):
-            character_list.append(cjk_string[i])
-        else:
-            pass
-        i += 1
-    return character_list
-
+    p = re.compile( '[A-Za-z]*]')
+    # i = 0
+    # character_list=[]
+    # while i<len(cjk_string):
+    #     if is_cjk(cjk_string[i]):
+    #         character_list.append(cjk_string[i])
+    #     else:
+    #         pass
+    #     i += 1
+    # return character_list
+    p.sub(' ', cjk_string)
+    # x = re.sub(r"\s+([a-zA-Z_][a-zA-Z_0-9]*)",r" ", cjk_string)
+    # return x
 
 # def get_letter_seq(string):
 #     words = []
