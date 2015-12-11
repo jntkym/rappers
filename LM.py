@@ -4,7 +4,6 @@
 
 # This chunk of code is taken from https://github.com/JonathanRaiman/theano_lstm
 
-
 import theano, theano.tensor as T
 import numpy as np
 import theano_lstm
@@ -106,7 +105,8 @@ class Model:
                 new_idxes = new_states[-1]
                 new_idx   = new_idxes.argmax()
                 # provide a stopping condition for greedy search:
-                return ([new_idx.astype(self.priming_word.dtype)] + new_states[1:-1]), theano.scan_module.until(T.eq(new_idx,self._stop_word))
+                return ([new_idx.astype(self.priming_word.dtype)] + new_states[1:-1]), \
+                       theano.scan_module.until(T.eq(new_idx,self._stop_word))
             else:
                 return new_states[1:]
 

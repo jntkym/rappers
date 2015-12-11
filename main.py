@@ -1,11 +1,10 @@
 #!/usr/bin/env python
-# -*- coding: utf8 -*-
+# -*- coding: utf-8 -*-
 
 import theano, theano.tensor as T
 import numpy as np
 import theano_lstm
 import random
-import numpy as np
 import csv
 import time
 import sys
@@ -13,9 +12,13 @@ from utils import *
 import logging
 import argparse
 import sys
-
+from collections import OrderedDict
+import string
+import subprocess
+import codecs
 from utils import *
 import LM
+import preprocess
 
 reload(sys)
 sys.setdefaultencoding('utf8')
@@ -27,34 +30,12 @@ logger = logging.getLogger(__name__)
 theano.config.floatX = "float32"
 rng = np.random.RandomState(1234)
 
-
-def create_corpus(lyrics_file):
-    logger.info("Preparing train set for extracting sentences ... ")
-    data_corpus = []
-    with open(lyrics_file) as csvfile:
-        reader = csv.reader(csvfile, delimiter="\t")
-        for row in reader:
-            sentences = row[2].decode("utf-8").split("<BR>")
-            for sentence in sentences:
-                items = []
-                # first split on whitespce
-                phrases = sentence.split(" ")
-                for phrase in phrases:
-                    words = get_cjk_characters(phrase)
-                    items += words
-                items.append(".")
-                if len(items) > 0:
-                    line = " ".join(items)
-                    # yield items
-                    data_corpus.append(line)
-    logger.info(" Done ! ")
-    return data_corpus
-
 def pad_into_matrix(rows, padding=0):
     if len(rows) == 0:
         return np.array([0, 0], dtype=np.int32)
     lengths = map(len, rows)
     width = max(lengths)
+    print "Maximum size: ", width
     height = len(rows)
     mat = np.empty([height, width], dtype=rows[0].dtype)
     mat.fill(padding)
@@ -63,10 +44,7 @@ def pad_into_matrix(rows, padding=0):
     return mat, list(lengths)
 
 
-
-
 def main():
-
 
     parser = argparse.ArgumentParser(description="An LSTM language model")
     parser.add_argument('--train', help='Train NN using a train file', nargs=1)
@@ -79,6 +57,8 @@ def main():
 
     # DEFAULTS
     n_epochs = 10
+    save_corpus=True
+
 
     if opts.n:
         n_epochs = int(opts.n[0])
@@ -86,17 +66,17 @@ def main():
     if opts.train:
 
         logger.info("*** TRAINING MODE *** ")
+        logger.info("Preparing data ...")
+        # generating cleaned lyrics corpus from crawled data
+        corpus = preprocess.create_corpus(opts.train[0],save=True)
 
-        # generating corpus
-        corpus = create_corpus(opts.train[0]) # the corpus is one sequence of characters per line
-        with open("corpus","w") as f:
-            for line in corpus:
-                print >> f, line
+        print "fdofdf"
+        time.sleep(1000)
 
         # building vocab
         vocab = Vocab()
         for sentence in corpus:
-            vocab.add_words(sentence.split(" "))
+            vocab.add_words(sentence.split(u" "))
 
         # generating the ind matrix
         numerical_lines = []
@@ -113,7 +93,7 @@ def main():
             celltype=LM.RNN # use RNN or LSTM
         )
         lm_model.vocab = vocab
-        lm_model.stop_on(vocab.word2index["."])
+        lm_model.stop_on(vocab.word2index[u"."])
 
         # training the model
         lm_model.train(n_epochs,idx_matrix,idx_vector_lengths)
