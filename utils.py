@@ -3,8 +3,12 @@
 
 # from __future__ import unicode_literals
 import numpy as np
+import theano
+import theano.tensor as T
 import re
 import time
+
+
 
 class Vocab:
     __slots__ = ["word2index", "index2word", "unknown"]
@@ -88,29 +92,22 @@ def get_cjk_characters(cjk_string):
     # x = re.sub(r"\s+([a-zA-Z_][a-zA-Z_0-9]*)",r" ", cjk_string)
     # return x
 
-# def get_letter_seq(string):
-#     words = []
-#     seq=""
-#     letter_flag=1
-#
-#     print string
-#
-#     for ch in string:
-#         while letter_flag:
-#             if ch.isalpha():
-#                 seq += ch
-#             elif is_cjk(ch):
-#                 words.append(seq)
-#                 seq = ""
-#
-#     print "Words:", words
-#     return words
-#     # pattern = re.search(r"(.*)([^A-Za-z])(.*)", string)
-#     # word1 = " ".join(re.findall(".*[a-zA-Z]", s))
-#     # print word1
-#     #
-#     # if len(word1) > 0:
-#     #     words.append(word1)
-#
-#     return words
 
+# NN realted utility funcs
+def intX(X):
+    return np.asarray(X, dtype=np.int32)
+
+def floatX(X):
+    return np.asarray(X, dtype=theano.config.floatX)
+
+def sharedX(X, dtype=theano.config.floatX, name=None):
+    return theano.shared(np.asarray(X, dtype=dtype), name=name)
+
+def shared0s(shape, dtype=theano.config.floatX, name=None):
+    return sharedX(np.zeros(shape), dtype=dtype, name=name)
+
+def sharedNs(shape, n, dtype=theano.config.floatX, name=None):
+    return sharedX(np.ones(shape)*n, dtype=dtype, name=name)
+
+def downcast_float(X):
+    return np.asarray(X, dtype=np.float32)
