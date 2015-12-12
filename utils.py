@@ -37,7 +37,6 @@ def is_cjk(char):
 
 
 def get_cjk_characters(cjk_string):
-<<<<<<< HEAD
     p = re.compile('[A-Za-z]*]')
     p.sub(' ', cjk_string)
 
@@ -49,47 +48,6 @@ def intX(X):
 
 def floatX(X):
     return np.asarray(X, dtype=theano.config.floatX)
-=======
-    p = re.compile( '[A-Za-z]*]')
-    # i = 0
-    # character_list=[]
-    # while i<len(cjk_string):
-    #     if is_cjk(cjk_string[i]):
-    #         character_list.append(cjk_string[i])
-    #     else:
-    #         pass
-    #     i += 1
-    # return character_list
-    p.sub(' ', cjk_string)
-    # x = re.sub(r"\s+([a-zA-Z_][a-zA-Z_0-9]*)",r" ", cjk_string)
-    # return x
-
-# def get_letter_seq(string):
-#     words = []
-#     seq=""
-#     letter_flag=1
-#
-#     print string
-#
-#     for ch in string:
-#         while letter_flag:
-#             if ch.isalpha():
-#                 seq += ch
-#             elif is_cjk(ch):
-#                 words.append(seq)
-#                 seq = ""
-#
-#     print "Words:", words
-#     return words
-#     # pattern = re.search(r"(.*)([^A-Za-z])(.*)", string)
-#     # word1 = " ".join(re.findall(".*[a-zA-Z]", s))
-#     # print word1
-#     #
-#     # if len(word1) > 0:
-#     #     words.append(word1)
-#
-#     return words
->>>>>>> Added preprocessing step (will have a separate branch) and keras LSTM model
 
 
 def sharedX(X, dtype=theano.config.floatX, name=None):

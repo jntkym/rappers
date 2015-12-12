@@ -1,24 +1,30 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import theano, theano.tensor as T
-import numpy as np
-import theano_lstm
 import random
 import csv
 import time
 import sys
-from utils import *
-import logging
-import argparse
-import sys
+import utils
+import preprocess
+
+
 from collections import OrderedDict
 import string
 import subprocess
 import codecs
-from utils import *
-import LM
-import preprocess
+
+import numpy as np
+import theano
+from passage.models import RNN
+from passage.updates import NAG, Regularizer
+from passage.layers import Embedding, LstmRecurrent, Dense
+from passage.utils import load, save
+
+import logging
+import argparse
+
+
 
 reload(sys)
 sys.setdefaultencoding('utf8')
@@ -29,19 +35,6 @@ logger = logging.getLogger(__name__)
 
 theano.config.floatX = "float32"
 rng = np.random.RandomState(1234)
-
-def pad_into_matrix(rows, padding=0):
-    if len(rows) == 0:
-        return np.array([0, 0], dtype=np.int32)
-    lengths = map(len, rows)
-    width = max(lengths)
-    print "Maximum size: ", width
-    height = len(rows)
-    mat = np.empty([height, width], dtype=rows[0].dtype)
-    mat.fill(padding)
-    for i, row in enumerate(rows):
-        mat[i, 0:len(row)] = row
-    return mat, list(lengths)
 
 
 def main():
@@ -59,7 +52,6 @@ def main():
     n_epochs = 10
     save_corpus=True
 
-
     if opts.n:
         n_epochs = int(opts.n[0])
 
@@ -68,66 +60,32 @@ def main():
         logger.info("*** TRAINING MODE *** ")
         logger.info("Preparing data ...")
         # generating cleaned lyrics corpus from crawled data
-        corpus = preprocess.create_corpus(opts.train[0],save=True)
-
-        print "fdofdf"
-        time.sleep(1000)
-
-        # building vocab
-        vocab = Vocab()
-        for sentence in corpus:
-            vocab.add_words(sentence.split(u" "))
-
-        # generating the ind matrix
-        numerical_lines = []
-        for sentence in corpus:
-            numerical_lines.append(vocab(sentence))
-        idx_matrix, idx_vector_lengths = pad_into_matrix(numerical_lines)
-
-        # construct model & theano functions:
-        lm_model = LM.Model(
-            input_size=10,
-            hidden_size=10,
-            vocab_size=len(vocab),
-            stack_size=1, # make this bigger, but makes compilation slow
-            celltype=LM.RNN # use RNN or LSTM
-        )
-        lm_model.vocab = vocab
-        lm_model.stop_on(vocab.word2index[u"."])
-
-        # training the model
-        lm_model.train(n_epochs,idx_matrix,idx_vector_lengths)
-        # lm_model.save("new_model.p")
+        x_tr, y_tr, x_te,y_te = preprocess.prepare_NN_input(opts.train[0], save=True)
 
 
+        layers = [
+            Embedding(size=28),
+            LstmRecurrent(size=512, p_drop=0.2),
+            LstmRecurrent(size=512, p_drop=0.2),
+            Dense(size=10, activation='softmax', p_drop=0.5)
+        ]
 
+        # #A bit of l2 helps with generalization, higher momentum helps convergence
+        # updater = NAG(momentum=0.95, regularizer=Regularizer(l2=1e-4))
+        #
+        # #Linear iterator for real valued data, cce cost for softmax
+        # model = RNN(layers=layers, updater=updater, iterator='linear', cost='cce')
+        # model.fit(trX, trY, n_epochs=20)
+        #
+        # tr_preds = model.predict(trX[:len(teY)])
+        # te_preds = model.predict(teX)
+        #
+        # tr_acc = np.mean(trY[:len(teY)] == np.argmax(tr_preds, axis=1))
+        # te_acc = np.mean(teY == np.argmax(te_preds, axis=1))
+        #
+        # # Test accuracy should be between 98.9% and 99.3%
+        # print 'train accuracy', tr_acc, 'test accuracy', te_acc
 
-    # if opts.test:
-    #
-    #     logger.info(" *** PREDICITON MODE *** ")
-    #     logger.info("Preparing input ... ")
-    #
-    #     # # construct model & theano functions:
-    #     # lm_model = LM.Model(
-    #     #     input_size=10,
-    #     #     hidden_size=10,
-    #     #     vocab_size=len(vocab),
-    #     #     stack_size=1,
-    #     #     celltype=LM.LSTM
-    #     # )
-    #     # lm_model.vocab = vocab
-    #     # lm_model.stop_on(vocab.word2index["."])
-    #
-    #
-    #     logger.info("Start parsing ... ")
-    #     result = parser.parse_input(input_corpus, theano=True)
-    #
-    #     # SAVING THE MODEL
-    #     output = open(opts.parse[0]+"_parsed.txt",'w')
-    #     logger.info("Parsing finished! Storing results in %s"%(output))
-    #     for i in result:
-    #         print >> output, i, "\n"
-    #     output.close()
 
 
 if __name__ == '__main__':
