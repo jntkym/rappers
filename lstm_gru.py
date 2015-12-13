@@ -10,9 +10,9 @@ import numpy as np
 import theano
 import theano.tensor as T
 
+
 class LSTM(object):
     def __init__(self, n_u, n_h):
-
         self.n_u = int(n_u)
         self.n_h = int(n_h)
 
@@ -41,113 +41,112 @@ class LSTM(object):
         # b_c : n_h  x  1
 
         # Input gate weights
-        self.W_xi = theano.shared(value = np.asarray(
-                                              np.random.uniform(
-                                                  size = (n_h, n_u),
-                                                  low = -.01, high = .01),
-                                              dtype = theano.config.floatX),
-                                  name = 'W_xi')
-        self.W_hi = theano.shared(value = np.asarray(
-                                              np.random.uniform(
-                                                  size = (n_h, n_h),
-                                                  low = -.01, high = .01),
-                                              dtype = theano.config.floatX),
-                                  name = 'W_hi')
-        self.W_ci = theano.shared(value = np.asarray(
-                                              np.random.uniform(
-                                                  size = (n_h, n_h),
-                                                  low = -.01, high = .01),
-                                              dtype = theano.config.floatX),
-                                  name = 'W_ci')
+        self.W_xi = theano.shared(value=np.asarray(
+            np.random.uniform(
+                size=(n_h, n_u),
+                low=-.01, high=.01),
+            dtype=theano.config.floatX),
+            name='W_xi')
+        self.W_hi = theano.shared(value=np.asarray(
+            np.random.uniform(
+                size=(n_h, n_h),
+                low=-.01, high=.01),
+            dtype=theano.config.floatX),
+            name='W_hi')
+        self.W_ci = theano.shared(value=np.asarray(
+            np.random.uniform(
+                size=(n_h, n_h),
+                low=-.01, high=.01),
+            dtype=theano.config.floatX),
+            name='W_ci')
 
         # Forget gate weights
-        self.W_xf = theano.shared(value = np.asarray(
-                                              np.random.uniform(
-                                                  size = (n_h, n_u),
-                                                  low = -.01, high = .01),
-                                              dtype = theano.config.floatX),
-                                  name = 'W_xf')
-        self.W_hf = theano.shared(value = np.asarray(
-                                              np.random.uniform(
-                                                  size = (n_h, n_h),
-                                                  low = -.01, high = .01),
-                                              dtype = theano.config.floatX),
-                                  name = 'W_hf')
-        self.W_cf = theano.shared(value = np.asarray(
-                                              np.random.uniform(
-                                                  size = (n_h, n_h),
-                                                  low = -.01, high = .01),
-                                              dtype = theano.config.floatX),
-                                  name = 'W_cf')
+        self.W_xf = theano.shared(value=np.asarray(
+            np.random.uniform(
+                size=(n_h, n_u),
+                low=-.01, high=.01),
+            dtype=theano.config.floatX),
+            name='W_xf')
+        self.W_hf = theano.shared(value=np.asarray(
+            np.random.uniform(
+                size=(n_h, n_h),
+                low=-.01, high=.01),
+            dtype=theano.config.floatX),
+            name='W_hf')
+        self.W_cf = theano.shared(value=np.asarray(
+            np.random.uniform(
+                size=(n_h, n_h),
+                low=-.01, high=.01),
+            dtype=theano.config.floatX),
+            name='W_cf')
 
         # Output gate weights
-        self.W_xo = theano.shared(value = np.asarray(
-                                              np.random.uniform(
-                                                  size = (n_h, n_u),
-                                                  low = -.01, high = .01),
-                                              dtype = theano.config.floatX),
-                                  name = 'W_xo')
-        self.W_ho = theano.shared(value = np.asarray(
-                                              np.random.uniform(
-                                                  size = (n_h, n_h),
-                                                  low = -.01, high = .01),
-                                              dtype = theano.config.floatX),
-                                  name = 'W_ho')
-        self.W_co = theano.shared(value = np.asarray(
-                                              np.random.uniform(
-                                                  size = (n_h, n_h),
-                                                  low = -.01, high = .01),
-                                              dtype = theano.config.floatX),
-                                  name = 'W_co')
+        self.W_xo = theano.shared(value=np.asarray(
+            np.random.uniform(
+                size=(n_h, n_u),
+                low=-.01, high=.01),
+            dtype=theano.config.floatX),
+            name='W_xo')
+        self.W_ho = theano.shared(value=np.asarray(
+            np.random.uniform(
+                size=(n_h, n_h),
+                low=-.01, high=.01),
+            dtype=theano.config.floatX),
+            name='W_ho')
+        self.W_co = theano.shared(value=np.asarray(
+            np.random.uniform(
+                size=(n_h, n_h),
+                low=-.01, high=.01),
+            dtype=theano.config.floatX),
+            name='W_co')
 
         # Cell weights
-        self.W_xc = theano.shared(value = np.asarray(
-                                              np.random.uniform(
-                                                  size = (n_h, n_u),
-                                                  low = -.01, high = .01),
-                                              dtype = theano.config.floatX),
-                                  name = 'W_xc')
-        self.W_hc = theano.shared(value = np.asarray(
-                                              np.random.uniform(
-                                                  size = (n_h, n_h),
-                                                  low = -.01, high = .01),
-                                              dtype = theano.config.floatX),
-                                  name = 'W_hc')
+        self.W_xc = theano.shared(value=np.asarray(
+            np.random.uniform(
+                size=(n_h, n_u),
+                low=-.01, high=.01),
+            dtype=theano.config.floatX),
+            name='W_xc')
+        self.W_hc = theano.shared(value=np.asarray(
+            np.random.uniform(
+                size=(n_h, n_h),
+                low=-.01, high=.01),
+            dtype=theano.config.floatX),
+            name='W_hc')
 
         # Input gate bias
-        self.b_i = theano.shared(value = np.zeros(
-                                             (n_h, ),
-                                             dtype = theano.config.floatX),
-                                 name = 'b_i')
+        self.b_i = theano.shared(value=np.zeros(
+            (n_h,),
+            dtype=theano.config.floatX),
+            name='b_i')
 
         # Forget gate bias
-        self.b_f = theano.shared(value = np.zeros(
-                                             (n_h, ),
-                                             dtype = theano.config.floatX),
-                                 name = 'b_f')
+        self.b_f = theano.shared(value=np.zeros(
+            (n_h,),
+            dtype=theano.config.floatX),
+            name='b_f')
 
         # Output gate bias
-        self.b_o = theano.shared(value = np.zeros(
-                                             (n_h, ),
-                                             dtype = theano.config.floatX),
-                                 name = 'b_o')
+        self.b_o = theano.shared(value=np.zeros(
+            (n_h,),
+            dtype=theano.config.floatX),
+            name='b_o')
 
         # cell bias
-        self.b_c = theano.shared(value = np.zeros(
-                                             (n_h, ),
-                                             dtype = theano.config.floatX),
-                                 name = 'b_c')
+        self.b_c = theano.shared(value=np.zeros(
+            (n_h,),
+            dtype=theano.config.floatX),
+            name='b_c')
 
         self.params = [self.W_xi, self.W_hi, self.W_ci,
-                          self.W_xf, self.W_hf, self.W_cf,
-                          self.W_xo, self.W_ho, self.W_co,
-                          self.W_xc, self.W_hc,
-                          self.b_i, self.b_f, self.b_o,
-                          self.b_c]
-
+                       self.W_xf, self.W_hf, self.W_cf,
+                       self.W_xo, self.W_ho, self.W_co,
+                       self.W_xc, self.W_hc,
+                       self.b_i, self.b_f, self.b_o,
+                       self.b_c]
 
     def lstm_as_activation_function(self, x_t, h_tm1, c_tm1):
-        #print self.W_xi.get_value(borrow = True)
+        # print self.W_xi.get_value(borrow = True)
         i_t = T.nnet.sigmoid(T.dot(self.W_xi, x_t) + \
                              T.dot(self.W_hi, h_tm1) + \
                              T.dot(self.W_ci, c_tm1) + \
@@ -157,16 +156,17 @@ class LSTM(object):
                              T.dot(self.W_cf, c_tm1) + \
                              self.b_f)
         c_t = f_t * c_tm1 + i_t * \
-                  T.tanh(T.dot(self.W_xc, x_t) + \
-                         T.dot(self.W_hc, h_tm1) + \
-                         self.b_c)
+                            T.tanh(T.dot(self.W_xc, x_t) + \
+                                   T.dot(self.W_hc, h_tm1) + \
+                                   self.b_c)
         o_t = T.nnet.sigmoid(T.dot(self.W_xo, x_t) + \
-                        T.dot(self.W_ho, h_tm1) + \
-                        T.dot(self.W_co, c_t) + \
-                        self.b_o)
+                             T.dot(self.W_ho, h_tm1) + \
+                             T.dot(self.W_co, c_t) + \
+                             self.b_o)
         h_t = o_t * T.tanh(c_t)
 
         return h_t, c_t
+
 
 # Gated Recurrent Unit
 # Recently proposed:
@@ -176,7 +176,6 @@ class LSTM(object):
 # machine translation: Encoder-decoder approaches.
 class GRU(object):
     def __init__(self, n_u, n_h):
-
         self.n_u = int(n_u)
         self.n_h = int(n_h)
 
@@ -200,73 +199,70 @@ class GRU(object):
         # b_h : n_h  x  1
 
         # Update gate weights
-        self.W_xz = theano.shared(value = np.asarray(
-                                              np.random.uniform(
-                                                  size = (n_h, n_u),
-                                                  low = -.01, high = .01),
-                                              dtype = theano.config.floatX),
-                                  name = 'W_xz')
-        self.W_hz = theano.shared(value = np.asarray(
-                                              np.random.uniform(
-                                                  size = (n_h, n_h),
-                                                  low = -.01, high = .01),
-                                              dtype = theano.config.floatX),
-                                  name = 'W_hz')
+        self.W_xz = theano.shared(value=np.asarray(
+            np.random.uniform(
+                size=(n_h, n_u),
+                low=-.01, high=.01),
+            dtype=theano.config.floatX),
+            name='W_xz')
+        self.W_hz = theano.shared(value=np.asarray(
+            np.random.uniform(
+                size=(n_h, n_h),
+                low=-.01, high=.01),
+            dtype=theano.config.floatX),
+            name='W_hz')
 
         # Reset gate weights
-        self.W_xr = theano.shared(value = np.asarray(
-                                              np.random.uniform(
-                                                  size = (n_h, n_u),
-                                                  low = -.01, high = .01),
-                                              dtype = theano.config.floatX),
-                                  name = 'W_xr')
-        self.W_hr = theano.shared(value = np.asarray(
-                                              np.random.uniform(
-                                                  size = (n_h, n_h),
-                                                  low = -.01, high = .01),
-                                              dtype = theano.config.floatX),
-                                  name = 'W_hr')
+        self.W_xr = theano.shared(value=np.asarray(
+            np.random.uniform(
+                size=(n_h, n_u),
+                low=-.01, high=.01),
+            dtype=theano.config.floatX),
+            name='W_xr')
+        self.W_hr = theano.shared(value=np.asarray(
+            np.random.uniform(
+                size=(n_h, n_h),
+                low=-.01, high=.01),
+            dtype=theano.config.floatX),
+            name='W_hr')
 
         # Other weights :-)
-        self.W_xh = theano.shared(value = np.asarray(
-                                              np.random.uniform(
-                                                  size = (n_h, n_u),
-                                                  low = -.01, high = .01),
-                                              dtype = theano.config.floatX),
-                                  name = 'W_xh')
-        self.W_hh = theano.shared(value = np.asarray(
-                                              np.random.uniform(
-                                                  size = (n_h, n_h),
-                                                  low = -.01, high = .01),
-                                              dtype = theano.config.floatX),
-                                  name = 'W_hh')
+        self.W_xh = theano.shared(value=np.asarray(
+            np.random.uniform(
+                size=(n_h, n_u),
+                low=-.01, high=.01),
+            dtype=theano.config.floatX),
+            name='W_xh')
+        self.W_hh = theano.shared(value=np.asarray(
+            np.random.uniform(
+                size=(n_h, n_h),
+                low=-.01, high=.01),
+            dtype=theano.config.floatX),
+            name='W_hh')
 
         # Update gate bias
-        self.b_z = theano.shared(value = np.zeros(
-                                             (n_h, ),
-                                             dtype = theano.config.floatX),
-                                 name = 'b_z')
+        self.b_z = theano.shared(value=np.zeros(
+            (n_h,),
+            dtype=theano.config.floatX),
+            name='b_z')
 
         # Reset gate bias
-        self.b_r = theano.shared(value = np.zeros(
-                                             (n_h, ),
-                                             dtype = theano.config.floatX),
-                                 name = 'b_r')
+        self.b_r = theano.shared(value=np.zeros(
+            (n_h,),
+            dtype=theano.config.floatX),
+            name='b_r')
 
         # Hidden layer bias
-        self.b_h = theano.shared(value = np.zeros(
-                                             (n_h, ),
-                                             dtype = theano.config.floatX),
-                                 name = 'b_h')
+        self.b_h = theano.shared(value=np.zeros(
+            (n_h,),
+            dtype=theano.config.floatX),
+            name='b_h')
 
         self.params = [self.W_xz, self.W_hz, self.W_xr, self.W_hr,
-                          self.W_xh, self.W_hh, self.b_z, self.b_r,
-                          self.b_h]
-
+                       self.W_xh, self.W_hh, self.b_z, self.b_r,
+                       self.b_h]
 
     def gru_as_activation_function(self, x_t, h_tm1):
-
-
         # update gate
         z_t = T.nnet.sigmoid(T.dot(self.W_xz, x_t) + \
                              T.dot(self.W_hz, h_tm1) + \
