@@ -69,6 +69,7 @@ def create_corpus(crawled_lyrics_file, save=False):
     """
     Load cleaned crawled corpus from local folder, feed to Kytea, get the output.
     Then laod the output and do post-processing.
+
     :param crawled_lyrics_file:
     :param save:
     :return: clean_corpus.txt file which is fed to LSTM
@@ -122,7 +123,9 @@ def clean_corpus(crawled_lyrics_file, model="keras", savepath=None):
     - N is the number of samples,
     - len(seq) is the length of the time series (= number of timestamps),
     - V is the vocab size.
+
     Y matirces are of size N x V
+
     :param filename: cleaned_corpus
     :return: 4 matrices
     """
