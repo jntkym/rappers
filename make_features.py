@@ -29,7 +29,9 @@ def calc_BoW_k_score(line, prev_lines, k=5):
 
 
 def calc_linelength_score(line1, line2):
-    pass
+    len_1 = len(line1.split())
+    len_2 = len(line2.split())
+    return 1 - abs(len_1 - len_2)/max(len_1, len_2)
 
 
 # 参考までにmain関数をつけておく
@@ -76,7 +78,7 @@ def main():
                 if len(prev_lines) > k_prev:
                     del prev_lines[0]
 
-                # print datum
+                # print datum["line_length"]
 
             sys.stderr.write(u"\r %d/%d done" % (i, data_size))
             sys.stderr.flush()
