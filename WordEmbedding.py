@@ -12,6 +12,7 @@ sys.stderr = codecs.getwriter('UTF-8')(sys.stderr)
 
 class WordEmbedding:
     CHARACTERS = u"ぐだばむゐぁけちぱめゑあげぢひもをぃこっびゃんいごつぴやゔぅさづふゅゕうざてぶゆゖぇしでぷょえじとへよぉすどべら゙゙゙゙おずなぺりかせにほるがぜぬぼれきそねぽろぎぞのまゎくたはみわゟＡＢＣＤＥＦＧＨＩＪＫＬＭＮＯＰＱＲＳＴＵＶＷＸＹＺ"
+    SIZE = len(CHARACTERS)*3
     def __init__(self, word):
         self.word = word
         self.embedding = dict.fromkeys(list(self.CHARACTERS), 0)
