@@ -13,7 +13,7 @@ sys.stdout = codecs.getwriter('UTF-8')(sys.stdout)
 sys.stderr = codecs.getwriter('UTF-8')(sys.stderr)
 
 class NeuralNetworkLanguageModel:
-    def __init__(self, history = 3, lineDim = 13, learningRate = 0.01, iteration = 2):
+    def __init__(self, history = 3, lineDim = 13, learningRate = 0.01, iteration = 100):
         self.history = history
         self.lineDim = lineDim
         self.learningRate = learningRate
@@ -54,7 +54,7 @@ class NeuralNetworkLanguageModel:
         """
         with tf.name_scope("line%d" % lineId):
             wordVectors = []
-            splitted = tf.split(1, lm.lineDim, line)
+            splitted = tf.split(1, self.lineDim, line)
             for wordId, word in enumerate(splitted):
                 wordVectors.append(self._getWordVector(wordId, word))
 
@@ -79,7 +79,7 @@ class NeuralNetworkLanguageModel:
         To be written
         """
         lineVectors = []
-        for lineIndex, line in enumerate(tf.split(1, lm.history + 1, lines)):
+        for lineIndex, line in enumerate(tf.split(1, self.history + 1, lines)):
             lineVectors.append(self._getLineVector(lineIndex, line))
 
         lineVectors = tf.concat(1, lineVectors)
@@ -134,13 +134,13 @@ class NeuralNetworkLanguageModel:
         trainer = tf.train.GradientDescentOptimizer(self.learningRate).minimize(loss) 
         return trainer
 
-    def getLongVectors(self, trainigData):
+    def getLongVectors(self, trainingData):
         vectors = []
         for datum in trainingData:
             vector = []
-            lineList = datum.split(lm.lineDelimiter)
+            lineList = datum.split(self.lineDelimiter)
             for line in lineList:
-                wordList = line.split(lm.wordDelimiter)
+                wordList = line.split(self.wordDelimiter)
                 wordList = ([WordEmbedding.PADDING] * (self.lineDim - len(wordList))) + wordList # Pad if the length of wordList is not enough
                 for word in wordList:
                     embed = WordEmbedding(word).vector
@@ -174,28 +174,14 @@ class NeuralNetworkLanguageModel:
 
     def predict(self, data, modelPath):
         data = self.getLongVectors(data)
-        saver = tf.train.Saver()
         feed_dict={self.input_placeholder: data}
 
         with tf.Session() as sess:
             output = self.inference(self.input_placeholder)
+            saver = tf.train.Saver()
             # Restore variables from disk.
             saver.restore(sess, modelPath)
             print "Model restored."
-            print sess.run(output, feed_dict=feed_dict)
-         
-if __name__ == "__main__":
-    trainingData = [u"あこんにちは:わたし:の:なまえ:は:にぼじろう:です||こんにちは:わたし:の:なまえ:は:にぼじろう:です||こんにちは:わたし:の:なまえ:は:にぼじろう:です||あなた:が:かの:ゆうめいな:にぼじろう:さん:ですか",
-                    u"ちは:わ:の:まえ:は:にろう:です||にちは:たし:の:まえ:は:にう:です||ちは:わたし:の:なまえ:は:うひゃひゃ:うひひ||ほげげ:が:かの:めいな:にぼじろう:さん:でか",
-                    u"ちは:わ:の:まえ:は:にろう:です||にちは:たし:の:まえ:は:にう:です||ちは:わたし:の:なまえ:は:うひゃひゃ:うひひ||ほげげ:が:かの:めいな:にぼじろう:さん:で",
-                    u"ちは:わ:の:まえ:は:にろう:です||にちは:たし:の:まえ:は:にう:です||ちは:わたし:の:なまえ:は:うひゃひゃ:うひひ||ほげげ:が:かの:めいな:にぼじろう:さん:で"]
-    testData = [u"あこんにちは:わたし:の:なまえ:は:にぼじろう:です||こんにちは:わたし:の:なまえ:は:にぼじろう:です||こんにちは:わたし:の:なまえ:は:にぼじろう:です||あなた:が:かの:ゆうめいな:にぼじろう:さん:ですか",
-                    u"ちは:わ:の:まえ:は:にろう:です||にちは:たし:の:まえ:は:にう:です||ちは:わたし:の:なまえ:は:うひゃひゃ:うひひ||ほげげ:が:かの:めいな:にぼじろう:さん:でか",
-                    u"ちは:わ:の:まえ:は:にろう:です||にちは:たし:の:まえ:は:にう:です||ちは:わたし:の:なまえ:は:うひゃひゃ:うひひ||ほげげ:が:かの:めいな:にぼじろう:さん:で",
-                    u"ちは:わ:の:まえ:は:にろう:です||にちは:たし:の:まえ:は:にう:です||ちは:わたし:の:なまえ:は:うひゃひゃ:うひひ||ほげげ:が:かの:めいな:にぼじろう:さん:で"]
-
-    modelPath = "model"
-    labels = np.array([1,1,1,1])
-    lm = NeuralNetworkLanguageModel()
-    lm.train(trainingData, labels, savePath = modelPath)
-    lm.predict(testData, modelPath)
+            output = sess.run(output, feed_dict=feed_dict)
+            result = sess.run(tf.argmax(output,1))
+            return result  
