@@ -1,7 +1,13 @@
-# Import MINST data
+# -*- coding: utf-8 -*-
+
 import tensorflow as tf
 import numpy as np
 import yaml
+import sys
+
+sys.stdin  = codecs.getreader('UTF-8')(sys.stdin)
+sys.stdout = codecs.getwriter('UTF-8')(sys.stdout)
+sys.stderr = codecs.getwriter('UTF-8')(sys.stderr)
 
 class NeuralNetworkLanguageModel:
     def __init__(self, history):
@@ -14,7 +20,7 @@ class NeuralNetworkLanguageModel:
         Parameters:
         word: str type word of which you want to create word embedding
         """
-        # embedding1 = {"あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをん"} 
+        [M 3[M#3[M GA[M#GA"あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをん"} 
         # embedding2
         raise NotImplemented
         return embedding
