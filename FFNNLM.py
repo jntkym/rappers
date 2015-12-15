@@ -4,33 +4,28 @@ import tensorflow as tf
 import numpy as np
 import yaml
 import sys
+import codecs
+
+# from WordEmbedding import WordEmbedding 
 
 sys.stdin  = codecs.getreader('UTF-8')(sys.stdin)
 sys.stdout = codecs.getwriter('UTF-8')(sys.stdout)
 sys.stderr = codecs.getwriter('UTF-8')(sys.stderr)
 
 class NeuralNetworkLanguageModel:
-    def __init__(self, history):
+    def __init__(self, history = 3, lineDim = 13, learningRate = 0.01):
         self.history = history
-        self.wordNum = 13 
-
-    def _getWordEmbedding(self, word):
-        """
-        Return word embedding for word
-        Parameters:
-        word: str type word of which you want to create word embedding
-        """
-        [M 3[M#3[M GA[M#GA"あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをん"} 
-        # embedding2
-        raise NotImplemented
-        return embedding
+        self.lineDim = lineDim
+        self.learningRate = learningRate
+        self.lineDelimiter = u"||"
+        self.wordDelimiter = u":"
 
     def _getWordVector(self, word, wordId):
         """
         To be written
         """
         with tf.name_scope("word%d" % wordId):
-            embedding = self._getWordEmbedding(word)
+            embedding = WordEmbedding(word)
             # Hidden 1
             with tf.name_scope('hidden1'):
                 weights = tf.Variable(tf.random_normal([300, 500], stddev=0.35), name="weights") # TODO: what value should I use for stddev
@@ -81,8 +76,8 @@ class NeuralNetworkLanguageModel:
         To be written
         """
         lineVectors = []
-        for lineIndex in xrange(lines): # history lines + candidate line 
-            lineVectors.append(self._getLineVector(lineIndex, lines[lineIndex]))
+        for lineIndex, line in enumerate(tf.split(1, lm.history + 1, lines)):
+            lineVectors.append(self._getLineVector(lineIndex, line))
 
         lineVectors = tf.concat(0, lineVectors)
         with tf.name_scope("text"):
@@ -122,6 +117,7 @@ class NeuralNetworkLanguageModel:
         # to 1-hot dense float vectors (that is we will have batch_size vectors,
         # each with NUM_CLASSES values, all of which are 0.0 except there will
         # be a 1.0 in the entry corresponding to the label).
+        NUM_CLASSES = 2
         batch_size = tf.size(labels)
         labels = tf.expand_dims(labels, 1)
         indices = tf.expand_dims(tf.range(0, batch_size), 1)
@@ -132,4 +128,33 @@ class NeuralNetworkLanguageModel:
         return loss
 
     def training(self):
-        raise NotImplemented
+        trainer = tf.train.GradientDescentOptimizer(self.learningRate).minimize(self.loss) 
+        return trainer
+
+    def train(self, trainingData, labels):
+        trainingData = [map(lambda x: x.split(lm.wordDelimiter), data.split(lm.lineDelimiter)) for data in trainingData]
+        # TODO: convertTrainingDataToLongVectors()
+        supervisor_labels_placeholder = tf.placeholder("string", [None, 2])
+        input_placeholder = tf.placeholder("string", [None, (lm.history + 1)*(lm.lineDim)*WordEmbedding.dim])
+        feed_dict={input_placeholder: trainingData, supervisor_labels_placeholder: labels}
+
+        with tf.Session() as sess:
+            output = lm.inference(input_placeholder)
+            loss = lm.loss(output, supervisor_labels_placeholder)
+            trainer = lm.training(loss)
+
+        init = tf.initialize_all_variables()
+        sess.run(init)
+
+        for step in range(1000):
+            sess.run(trainer, feed_dict=feed_dict)
+            # if step % 100 == 0:
+                # print sess.run(loss, feed_dict=feed_dict)
+         
+if __name__ == "__main__":
+    trainingData = [u"こんにちは:わたし:の:なまえ:は:にぼじろう:です||こんにちは:わたし:の:なまえ:は:にぼじろう:です||こんにちは:わたし:の:なまえ:は:にぼじろう:です||あなた:が:かの:ゆうめいな:にぼじろう:さん:ですか",
+                    u"こんにちは:わたし:の:なまえ:は:にぼじろう:です||こんにちは:わたし:の:なまえ:は:にぼじろう:です||こんにちは:わたし:の:なまえ:は:うひゃひゃ:うひひ||ほげげ:が:かの:ゆうめいな:にぼじろう:さん:ですか"]
+    labels = np.array([0,1])
+    lm = NeuralNetworkLanguageModel()
+    lm.train(trainingData, labels)
+
