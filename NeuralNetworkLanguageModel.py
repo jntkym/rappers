@@ -6,12 +6,17 @@ import tensorflow as tf
 import numpy as np
 import yaml
 import sys
+import codecs
 
 from WordEmbedding import WordEmbedding 
 
+sys.stdin  = codecs.getreader('UTF-8')(sys.stdin)
+sys.stdout = codecs.getwriter('UTF-8')(sys.stdout)
+sys.stderr = codecs.getwriter('UTF-8')(sys.stderr)
+
 class NeuralNetworkLanguageModel:
     def __init__(self, configPath="config.yml"):
-        with open(configPath, "r") as f:
+        with codecs.open(configPath, "r", "UTF-8") as f:
             configString = f.read()
             data = yaml.load(configString) 
 
@@ -227,7 +232,7 @@ class NeuralNetworkLanguageModel:
             saver = tf.train.Saver()
             for step in xrange(self.iteration):
                 sess.run(trainer, feed_dict=feed_dict)
-                if step % 100 == 0:
+                if step % 1 == 0:
                     print "Loss in iteration %d = %f" % (step + 1, sess.run(loss, feed_dict=feed_dict))
             if savePath:
                 save_path = saver.save(sess, "model")

@@ -2,6 +2,7 @@
 
 # This is a configuration file for NeuralNetworkLanuguageModel
 
+padding: "ｐ"
 lineDelimiter: "||"
 wordDelimiter: ":"
 learningRate: 0.01
