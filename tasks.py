@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from invoke import run, task 
 from NeuralNetworkLanguageModel import * 
+import DataSet
 
 @task
 def clean():
@@ -24,3 +25,7 @@ def test(modelPath):
                     u"ちは:わ:の:まえ:は:にろう:です||にちは:たし:の:まえ:は:にう:です||ちは:わたし:の:なまえ:は:うひゃひゃ:うひひ||ほげげ:が:かの:めいな:にぼじろう:さん:で"]
     lm = NeuralNetworkLanguageModel()
     print lm.predict(testData, modelPath)
+
+@task
+def createData(inputFilename, outputFilename):
+    DataSet.createData(inputFilename, outputFilename)
