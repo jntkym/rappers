@@ -11,7 +11,7 @@ sys.stderr = codecs.getwriter('UTF-8')(sys.stderr)
 
 class WordEmbedding:
     PADDING = u"％"
-    CHARACTERS = u"ぐだばむゐぁけちぱめゑあげぢひもをぃこっびゃんいごつぴやゔぅさづふゅゕうざてぶゆゖぇしでぷょえじとへよぉすどべらおずなぺりかせにほるがぜぬぼれきそねぽろぎぞのまゎくたはみわゟＡＢＣＤＥＦＧＨＩＪＫＬＭＮＯＰＱＲＳＴＵＶＷＸＹＺ"
+    CHARACTERS = u"ぐだばむゐぁけちぱめゑあげぢひもをぃこっびゃんいごつぴやゔぅさづふゅゕうざてぶゆゖぇしでぷょえじとへよぉすどべらおずなぺりかせにほるがぜぬぼれきそねぽろぎぞのまゎくたはみわゟＡＢＣＤＥＦＧＨＩＪＫＬＭＮＯＰＱＲＳＴＵＶＷＸＹＺ。！？０１２３４５６７８９ー〜"
     VOCAB = PADDING + CHARACTERS
     EMBEDDING_SIZE = len(VOCAB)*3
     ALPHA = 0.2
