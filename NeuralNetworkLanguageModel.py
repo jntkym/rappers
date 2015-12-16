@@ -36,11 +36,11 @@ class NeuralNetworkLanguageModel:
             # Hidden 1
             with tf.name_scope('hidden1'):
                 weights = tf.Variable(
-                        tf.zeros([WordEmbedding.EMBEDDING_SIZE, self.layerSize["word"]["hidden1"]]), 
+                        tf.random_uniform([WordEmbedding.EMBEDDING_SIZE, self.layerSize["word"]["hidden1"]]), 
                         name="weights"
                         )
                 biases = tf.Variable(
-                        tf.zeros([self.layerSize["word"]["hidden1"]]), 
+                        tf.random_uniform([self.layerSize["word"]["hidden1"]]), 
                         name='biases'
                         )
                 hidden1 = tf.nn.relu(tf.matmul(word, weights) + biases)
@@ -48,11 +48,11 @@ class NeuralNetworkLanguageModel:
             # Hidden 2
             with tf.name_scope('hidden2'):
                 weights = tf.Variable(
-                        tf.zeros([self.layerSize["word"]["hidden1"], self.layerSize["word"]["hidden2"]]), 
+                        tf.random_uniform([self.layerSize["word"]["hidden1"], self.layerSize["word"]["hidden2"]]), 
                         name="weights"
                         )
                 biases = tf.Variable(
-                        tf.zeros([self.layerSize["word"]["hidden2"]]), 
+                        tf.random_uniform([self.layerSize["word"]["hidden2"]]), 
                         name='biases'
                         )
                 hidden2 = tf.nn.relu(tf.matmul(hidden1, weights) + biases) 
@@ -60,11 +60,11 @@ class NeuralNetworkLanguageModel:
             # Word vector
             with tf.name_scope('wordVector'):
                 weights = tf.Variable(
-                        tf.zeros([self.layerSize["word"]["hidden2"], WordEmbedding.EMBEDDING_SIZE]), 
+                        tf.random_uniform([self.layerSize["word"]["hidden2"], WordEmbedding.EMBEDDING_SIZE]), 
                         name="weights"
                         )
                 biases = tf.Variable(
-                        tf.zeros([WordEmbedding.EMBEDDING_SIZE]), 
+                        tf.random_uniform([WordEmbedding.EMBEDDING_SIZE]), 
                         name='biases'
                         )
                 wordVector = tf.nn.relu(tf.matmul(hidden2, weights) + biases) 
@@ -86,11 +86,11 @@ class NeuralNetworkLanguageModel:
             # Hidden 1
             with tf.name_scope('hidden1'):
                 weights = tf.Variable(
-                        tf.zeros([lineVectorSize, self.layerSize["line"]["hidden1"]]), 
+                        tf.random_uniform([lineVectorSize, self.layerSize["line"]["hidden1"]]), 
                         name="weights"
                         )
                 biases = tf.Variable(
-                        tf.zeros([self.layerSize["line"]["hidden1"]]), 
+                        tf.random_uniform([self.layerSize["line"]["hidden1"]]), 
                         name='biases'
                         )
                 hidden1 = tf.nn.relu(tf.matmul(wordVectors, weights) + biases)
@@ -98,11 +98,11 @@ class NeuralNetworkLanguageModel:
             # Line vector
             with tf.name_scope('lineVector'):
                 weights = tf.Variable(
-                        tf.zeros([self.layerSize["line"]["hidden1"], lineVectorSize]), 
+                        tf.random_uniform([self.layerSize["line"]["hidden1"], lineVectorSize]), 
                         name="weights"
                         )
                 biases = tf.Variable(
-                        tf.zeros([lineVectorSize]), 
+                        tf.random_uniform([lineVectorSize]), 
                         name='biases'
                         )
                 lineVector = tf.nn.relu(tf.matmul(hidden1, weights) + biases)
@@ -124,11 +124,11 @@ class NeuralNetworkLanguageModel:
             # Hidden 1
             with tf.name_scope('hidden1'):
                 weights = tf.Variable(
-                        tf.zeros([textVectorSize, self.layerSize["text"]["hidden1"]]), 
+                        tf.random_uniform([textVectorSize, self.layerSize["text"]["hidden1"]]), 
                         name="weights"
                         )
                 biases = tf.Variable(
-                        tf.zeros([self.layerSize["text"]["hidden1"]]), 
+                        tf.random_uniform([self.layerSize["text"]["hidden1"]]), 
                         name='biases'
                         )
                 hidden1 = tf.nn.relu(tf.matmul(lineVectors, weights) + biases)
@@ -136,11 +136,11 @@ class NeuralNetworkLanguageModel:
             # Text vector
             with tf.name_scope('textVector'):
                 weights = tf.Variable(
-                        tf.zeros([self.layerSize["text"]["hidden1"], textVectorSize]), 
+                        tf.random_uniform([self.layerSize["text"]["hidden1"], textVectorSize]), 
                         name="weights"
                         )
                 biases = tf.Variable(
-                        tf.zeros([textVectorSize]), 
+                        tf.random_uniform([textVectorSize]), 
                         name='biases'
                         )
                 textVector = tf.nn.relu(tf.matmul(hidden1, weights) + biases)
@@ -153,11 +153,11 @@ class NeuralNetworkLanguageModel:
         # Linear
         with tf.name_scope('linear'):
             weights = tf.Variable(
-                    tf.zeros([textVectorSize, 2]), 
+                    tf.random_uniform([textVectorSize, 2]), 
                     name="weights"
                     )
             biases = tf.Variable(
-                    tf.zeros([2]), 
+                    tf.random_uniform([2]), 
                     name='biases'
                     )
             logits = tf.matmul(textVector, weights) + biases
@@ -246,3 +246,23 @@ class NeuralNetworkLanguageModel:
             output = sess.run(output, feed_dict=feed_dict)
             result = sess.run(tf.argmax(output,1))
             return result  
+
+    def next_batch(self, batch_size):
+        """Return the next `batch_size` examples from this data set."""
+        start = self._index_in_epoch
+        self._index_in_epoch += batch_size
+        if self._index_in_epoch > self._num_examples:
+            # Finished epoch
+            self._epochs_completed += 1
+            # Shuffle the data
+            perm = numpy.arange(self._num_examples)
+            numpy.random.shuffle(perm)
+            self._images = self._images[perm]
+            self._labels = self._labels[perm]
+            # Start next epoch
+            start = 0
+            self._index_in_epoch = batch_size
+            assert batch_size <= self._num_examples
+        end = self._index_in_epoch
+        return self._images[start:end], self._labels[start:end]
+
