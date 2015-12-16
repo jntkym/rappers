@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding:utf-8 -*-
 
+<<<<<<< HEAD
 # from __future__ import unicode_literals
 import numpy as np
 import theano
@@ -10,6 +11,8 @@ import time
 import os
 import collections
 import cPickle as pickle
+=======
+>>>>>>> LSTM_LM
 import sys
 
 reload(sys)
@@ -34,6 +37,7 @@ ranges = [
 
 def is_cjk(char):
     return any([range["from"] <= ord(char) <= range["to"] for range in ranges])
+<<<<<<< HEAD
 
 
 def get_cjk_characters(cjk_string):
@@ -123,3 +127,5 @@ class TextLoader():
 
     def reset_batch_pointer(self):
         self.pointer = 0
+=======
+>>>>>>> LSTM_LM

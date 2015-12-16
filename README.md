@@ -1,6 +1,7 @@
 # Rappers
 Automatic rap lyric generation tool
 
+<<<<<<< HEAD
 # Requirements
 
 - invoke
@@ -24,10 +25,17 @@ inv test model
 ```
 
 ## Obtain lyrics ##
+=======
+# Environment #
+
+# Usage #
+## Construct corpus ##
+>>>>>>> LSTM_LM
 ```
 # pip install beautifulsoup
 python getlyrics.py -v > output.tsv
 ```
+<<<<<<< HEAD
 
 ## Construct corpus ##
 
@@ -51,3 +59,5 @@ The preprocessing step is finished. You will have two files in the */data* folde
 - *daihyou_vocab.p* file as a vocabulary file (keys correspond to surface forms, values to 代表表記) - this is used to lookup the embeddings during the LSTM training
 
 
+=======
+>>>>>>> LSTM_LM
