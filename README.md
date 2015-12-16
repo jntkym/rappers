@@ -16,14 +16,13 @@ inv train model
 ```
 
 - Testing
-=======
 
-- Testing
 ```
 inv test model
 ```
 
 ## Construct corpus ##
+
 ```
 # pip install beautifulsoup
 python getlyrics.py -v > output.tsv
