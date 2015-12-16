@@ -172,7 +172,6 @@ def clean_corpus(crawled_lyrics_file, model="keras", savepath=None):
             # # the following lines are for theano model only
 
 
-
 def process_juman_output(juman_outfile):
     corpus = []
     daihyou_vocab = {}
@@ -210,10 +209,6 @@ def process_juman_output(juman_outfile):
         for line in corpus.split(u"\n"):
             print >> f, line
 
-    # # save a list corpus file
-    # with open("data/list_corpus.p", "w") as corpusfile:
-    #     pickle.dump(corpus, corpusfile)
-
     # save a vocabulary
     with open("data/daihyou_vocab.p", "w") as vocabfile:
         pickle.dump(daihyou_vocab, vocabfile)
@@ -221,7 +216,6 @@ def process_juman_output(juman_outfile):
     print "cleaning datadir ..."
     subprocess.call('rm -f ./data/clean_corpus.txt ./data/kytea_out.txt ./data/cleaned_lyrics.txt',
                     shell=True)
-
 
 def main():
     parser = argparse.ArgumentParser(description="An LSTM language model")
@@ -239,7 +233,6 @@ def main():
         print "Processing juman output ... "
         process_juman_output(opts.juman[0])
         print "Done"
-
 
 if __name__ == '__main__':
     main()
