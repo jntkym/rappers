@@ -14,9 +14,18 @@ Automatic rap lyric generation tool
 ```
 inv train model
 ```
+<<<<<<< HEAD
 
 - Testing
+=======
+>>>>>>> Modify README.md
 
+- Testing
+```
+inv test model
+```
+
+## Construct corpus ##
 ```
 inv test model
 ```
