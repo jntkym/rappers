@@ -28,6 +28,8 @@ class WordEmbedding:
         wordlen = normalizer = len(word_list)
         for position in range(len(word_list)):
             w = word_list[position]
+            if w not in self.VOCAB:
+                continue
             self.frequency[w] += 1
 
             index = self.VOCAB.index(w)
