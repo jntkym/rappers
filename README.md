@@ -14,11 +14,9 @@ Automatic rap lyric generation tool
 ```
 inv train model
 ```
-<<<<<<< HEAD
 
 - Testing
 =======
->>>>>>> Modify README.md
 
 - Testing
 ```
@@ -27,5 +25,6 @@ inv test model
 
 ## Construct corpus ##
 ```
-inv test model
+# pip install beautifulsoup
+python getlyrics.py -v > output.tsv
 ```
