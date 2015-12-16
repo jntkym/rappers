@@ -1,8 +1,16 @@
 # -*- coding: utf-8 -*-
 from __future__ import division
+from csv import DictReader
 import sys
 import codecs
 
+import rhyme
+
+u"""Make features
+
+DEMO:
+python make_features.py
+"""
 
 def calc_Jaccard_similarity(BoW1, BoW2):
     # 重複を許さない場合
@@ -34,30 +42,44 @@ def calc_linelength_score(line1, line2):
     return 1 - abs(len_1 - len_2)/max(len_1, len_2)
 
 
+def calc_endrhyme_score(line1, line2):
+    u"""Calculate EndRhyme score
+
+    EndRhyme is the number of matching vowel phonemes
+    at the end of lines l and s_m, i.e., the last line of B.
+    Spaces and consonant phonemes are ignored.
+
+    Args: two strings (utf-8)
+    """
+    # Get reversed vowels
+    vowels1 = rhyme.get_phonetic_transcription(line1)[::-1].replace(' ', '')
+    vowels2 = rhyme.get_phonetic_transcription(line2)[::-1].replace(' ', '')
+
+    # Count # of matching vowel phonemes
+    i = 0
+    n_limit = min(len(vowels1), len(vowels2))
+    n_matches = 0
+    while i < n_limit:
+        if vowels1[i] != vowels2[i]:
+            break
+        n_matches += 1
+        i += 1
+
+    return n_matches
+
+
 # 参考までにmain関数をつけておく
 def main():
     dummy_fill = u""
     k_prev = 5
 
     data_path = "data/lyrics_shonan_s27_raw.tsv"
-    with open(data_path, "r") as data:
-        data_size = sum([1 for _ in data])
-    with codecs.open(data_path, "r", encoding="utf-8") as data:
-        for i, song in enumerate(data):
+    data_size = 0
+    with codecs.open(data_path, "r", encoding="utf-8") as f:
+        for i, row in enumerate(DictReader(f, delimiter='\t')):
             prev_lines = [dummy_fill for _ in xrange(k_prev)]
-            # 1行目は飛ばす
-            if i == 0:
-                continue
-            # 要素数が足りない時はcontinue
-            temp_split = song.split("\t")
-            if len(temp_split) < 2:
-                print "too few elements"
-                print temp_split
-                continue
-            # textにtabが含まれていることがあるので" "でjoin
-            artist, title, text = temp_split[0], temp_split[1], temp_split[2:]
-            text = u" ".join(text)
-            lines = text.split(u"<BR>")
+
+            lines = row[u"text"].split(u"<BR>")
             for line in lines:
                 line = line.strip()
                 if line == "":
@@ -65,22 +87,27 @@ def main():
                 line_length = calc_linelength_score(line, prev_lines[-1])
                 BoW = calc_BoW_k_score(line, prev_lines, k=1)
                 BoW5 = calc_BoW_k_score(line, prev_lines, k=k_prev)
+                endrhyme = calc_endrhyme_score(line, prev_lines[-1])
+                endrhyme_1 = calc_endrhyme_score(line, prev_lines[-2])
 
-                datum = {"artist": artist,
-                         "title": title,
+                datum = {"artist": row[u"artist"],
+                         "title": row[u"title"],
+                         "endrhyme": endrhyme,
+                         "endrhyme-1": endrhyme_1,
                          "BoW": BoW,
                          "BoW5": BoW5,
                          "line_length": line_length,
-                         "orig_line": line
+                         "orig_line": line,
                          }
 
                 prev_lines.append(line)
                 if len(prev_lines) > k_prev:
                     del prev_lines[0]
 
-                # print datum["line_length"]
+                if datum["endrhyme"] >= 3:
+                    print(u"{}\n<-> {}".format(line, prev_lines[-2]))
 
-            sys.stderr.write(u"\r %d/%d done" % (i, data_size))
+            sys.stderr.write(u"\r {} done".format(i))
             sys.stderr.flush()
 
 if __name__ == '__main__':
