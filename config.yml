@@ -1,17 +1,21 @@
 ---
 
-history: 3
-lineDim: 13
-learningRate: 0.01
+# This is a configuration file for NeuralNetworkLanuguageModel
+
 lineDelimiter: "||"
 wordDelimiter: ":"
-iteration: 100
-batchSize: 10  
+learningRate: 0.01
+history: 3 # How many lines to consider as history
+
+# Parameters used in dope learning paper
+lineDim: 13 # How many words does a line contain?
+iteration: 20 # iteration in training
+batchSize: 10
 layerSize:
     word: 
-        hidden1: 500 
+        hidden1: 500
         hidden2: 500
     line:
-        hidden1: 500
+        hidden1: 256
     text:
-        hidden1: 500
+        hidden1: 256
