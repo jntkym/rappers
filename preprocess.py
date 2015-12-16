@@ -19,12 +19,14 @@ logger = logging.getLogger(__name__)
 # pattern for removing redundunt spaces
 space_pat = re.compile(u'\s\s+', re.U)
 
-
 # # pattern for removing English - not used now
 # eng_words_pat = re.compile(u'[A-Za-z]*',re.U)
 
 # aux 1.1+
 def translate_non_alphanumerics(to_translate, translate_to=None):
+    """
+    Deleting not needed symbols
+    """
     not_letters_or_digits = u'[!&#%\"\'()_`{※+,』\|}~?...…「〜＞ｒ（）＜｀！」？＿％・@＠”’"：；＋ー！。。。、＿・_ _『 □**＊-\.\/:;<=>△?@\[\]\^'
     translate_table = dict((ord(char), translate_to) for char in not_letters_or_digits)
     return to_translate.translate(translate_table)
@@ -34,7 +36,7 @@ def translate_non_alphanumerics(to_translate, translate_to=None):
 def clean_lyrics(lyrics_file):
     """
     Take crawled data and do some simple cleaning on it
-    :param lyrics_file: file from Otani san - crawled data
+    :param lyrics_file: crawled data
     :return: cleaned data, which will be fed to Kytea
     """
     data_corpus = []
@@ -46,13 +48,6 @@ def clean_lyrics(lyrics_file):
                 sentence = unicode(sentence)
                 sentence = translate_non_alphanumerics(sentence)
                 sentence = space_pat.sub(u' ', sentence)
-
-                # delete English
-                # sentence = eng_words_pat.sub(u'', sentence).split(u"\s")
-
-                # sentence = sentence.split(u'')
-                # sentence.append(u".")
-                # sentence += u'.'
 
                 if len(sentence) > 1:
                     data_corpus.append(sentence)
@@ -72,7 +67,7 @@ def create_corpus(crawled_lyrics_file, save=False):
 
     :param crawled_lyrics_file:
     :param save:
-    :return: clean_corpus.txt file which is fed to LSTM
+    :return: clean_corpus file 
     """
 
     # generating cleaned lyrics corpus from crawled data
@@ -94,8 +89,6 @@ def create_corpus(crawled_lyrics_file, save=False):
             seq = []
             for item in triplets:
                 try:
-                    # hir = item.split(u"/")[2]
-                    # if hir != "UNK":
                     hir = item.split(u"/")[0]
                     if hir != "\\":
                         seq.append(hir)
@@ -117,18 +110,6 @@ def create_corpus(crawled_lyrics_file, save=False):
 
 # main function - creates input for the NN
 def clean_corpus(crawled_lyrics_file, model="keras", savepath=None):
-    """
-    Prepares 4 matrices: x_train, y_train, x_test, y_test.
-    X matrices are of size N x len(seq) x V:
-    - N is the number of samples,
-    - len(seq) is the length of the time series (= number of timestamps),
-    - V is the vocab size.
-
-    Y matirces are of size N x V
-
-    :param filename: cleaned_corpus
-    :return: 4 matrices
-    """
 
     logger.info("Preparing data ...")
     text = create_corpus(crawled_lyrics_file, save=False).lower()
@@ -138,42 +119,9 @@ def clean_corpus(crawled_lyrics_file, model="keras", savepath=None):
             f.write(text)
             logger.info(" Corpus saved into ----->%s " % (savepath))
 
-            # if model == "keras":
-            #
-            #     chars = set(text)
-            #     vocab_size = len(chars)
-            #     text_size = len(text)
-            #
-            #     print('corpus length:', len(text))
-            #     print('total chars:', vocab_size)
-            #
-            #     char_indices = dict((c, i) for i, c in enumerate(chars))
-            #     indices_char = dict((i, c) for i, c in enumerate(chars))
-            #
-            #     # cut the text in semi-redundant sequences of maxlen characters
-            #
-            #     sentences = []
-            #     next_chars = []
-            #     for i in range(0, len(text) - maxlen, step):
-            #         sentences.append(text[i: i + maxlen])
-            #         next_chars.append(text[i + maxlen])
-            #     print('nb sequences:', len(sentences))
-            #
-            #     print('Vectorization...')
-            #     X = np.zeros((len(sentences), maxlen, len(chars)), dtype=np.bool)
-            #     y = np.zeros((len(sentences), len(chars)), dtype=np.bool)
-            #     for i, sentence in enumerate(sentences):
-            #         for t, char in enumerate(sentence):
-            #             X[i, t, char_indices[char]] = 1
-            #         y[i, char_indices[next_chars[i]]] = 1
-            #
-            #     return X, y, text, char_indices, indices_char
-
-            # # the following lines are for theano model only
-
-
-
 def process_juman_output(juman_outfile):
+
+    logger.info("Processing juman output ...")
     corpus = []
     daihyou_vocab = {}
 
@@ -210,10 +158,6 @@ def process_juman_output(juman_outfile):
         for line in corpus.split(u"\n"):
             print >> f, line
 
-    # # save a list corpus file
-    # with open("data/list_corpus.p", "w") as corpusfile:
-    #     pickle.dump(corpus, corpusfile)
-
     # save a vocabulary
     with open("data/daihyou_vocab.p", "w") as vocabfile:
         pickle.dump(daihyou_vocab, vocabfile)
@@ -231,15 +175,12 @@ def main():
     opts = parser.parse_args()
 
     if opts.crawl:
-        print "Processing crawled data ..."
         clean_corpus(opts.crawl[0], savepath="data/clean_corpus.txt")
-        print "Done"
+        print "Done cleaning crawled data"
 
     if opts.juman:
-        print "Processing juman output ... "
         process_juman_output(opts.juman[0])
-        print "Done"
-
+        print "Done preparing the corpus"
 
 if __name__ == '__main__':
     main()
