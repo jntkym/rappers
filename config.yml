@@ -1,1 +1,17 @@
 ---
+
+history: 3
+lineDim: 13
+learningRate: 0.01
+lineDelimiter: "||"
+wordDelimiter: ":"
+iteration: 100
+batchSize: 10  
+layerSize:
+    word: 
+        hidden1: 500 
+        hidden2: 500
+    line:
+        hidden1: 500
+    text:
+        hidden1: 500

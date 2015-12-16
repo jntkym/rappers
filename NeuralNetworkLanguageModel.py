@@ -13,15 +13,20 @@ sys.stdout = codecs.getwriter('UTF-8')(sys.stdout)
 sys.stderr = codecs.getwriter('UTF-8')(sys.stderr)
 
 class NeuralNetworkLanguageModel:
-    def __init__(self, history = 3, lineDim = 13, learningRate = 0.01, iteration = 100):
-        self.history = history
-        self.lineDim = lineDim
-        self.learningRate = learningRate
-        self.lineDelimiter = u"||"
-        self.wordDelimiter = u":"
-        self.iteration = iteration
+    def __init__(self, configPath="config.yml"):
+        with codecs.open(configPath, "r", "UTF-8") as f:
+            configString = f.read()
+            data = yaml.load(configString) 
+
+        self.history = data["history"]
+        self.lineDim = data["lineDim"]
+        self.learningRate = data["learningRate"]
+        self.lineDelimiter = data["lineDelimiter"]
+        self.wordDelimiter = data["wordDelimiter"]
+        self.iteration = data["iteration"]
         self.supervisor_labels_placeholder = tf.placeholder("int32", [None])
         self.input_placeholder = tf.placeholder("float", [None, (self.history + 1)*(self.lineDim)*WordEmbedding.EMBEDDING_SIZE])
+        self.layerSize = data["layerSize"]
 
     def _getWordVector(self, wordId, word):
         """
@@ -30,19 +35,19 @@ class NeuralNetworkLanguageModel:
         with tf.name_scope("word%d" % wordId):
             # Hidden 1
             with tf.name_scope('hidden1'):
-                weights = tf.Variable(tf.zeros([WordEmbedding.EMBEDDING_SIZE, 500]), name="weights")
-                biases = tf.Variable(tf.zeros([500]), name='biases')
+                weights = tf.Variable(tf.zeros([WordEmbedding.EMBEDDING_SIZE, self.layerSize["word"]["hidden1"]]), name="weights")
+                biases = tf.Variable(tf.zeros([self.layerSize["word"]["hidden1"]]), name='biases')
                 hidden1 = tf.nn.relu(tf.matmul(word, weights) + biases)
 
             # Hidden 2
             with tf.name_scope('hidden2'):
-                weights = tf.Variable(tf.zeros([500, 500]), name="weights")
-                biases = tf.Variable(tf.zeros([500]), name='biases')
+                weights = tf.Variable(tf.zeros([self.layerSize["word"]["hidden1"], self.layerSize["word"]["hidden2"]]), name="weights")
+                biases = tf.Variable(tf.zeros([self.layerSize["word"]["hidden2"]]), name='biases')
                 hidden2 = tf.nn.relu(tf.matmul(hidden1, weights) + biases) 
 
             # Word vector
             with tf.name_scope('wordVector'):
-                weights = tf.Variable(tf.zeros([500, WordEmbedding.EMBEDDING_SIZE]), name="weights")
+                weights = tf.Variable(tf.zeros([self.layerSize["word"]["hidden2"], WordEmbedding.EMBEDDING_SIZE]), name="weights")
                 biases = tf.Variable(tf.zeros([WordEmbedding.EMBEDDING_SIZE]), name='biases')
                 wordVector = tf.nn.relu(tf.matmul(hidden2, weights) + biases) 
 
@@ -59,17 +64,17 @@ class NeuralNetworkLanguageModel:
                 wordVectors.append(self._getWordVector(wordId, word))
 
             wordVectors = tf.concat(1, wordVectors)
-
+            lineVectorSize = (self.lineDim)*WordEmbedding.EMBEDDING_SIZE
             # Hidden 1
             with tf.name_scope('hidden1'):
-                weights = tf.Variable(tf.zeros([wordVectors.get_shape()[1], 500]), name="weights")
-                biases = tf.Variable(tf.zeros([500]), name='biases')
+                weights = tf.Variable(tf.zeros([lineVectorSize, self.layerSize["line"]["hidden1"]]), name="weights")
+                biases = tf.Variable(tf.zeros([self.layerSize["line"]["hidden1"]]), name='biases')
                 hidden1 = tf.nn.relu(tf.matmul(wordVectors, weights) + biases)
 
             # Line vector
             with tf.name_scope('lineVector'):
-                weights = tf.Variable(tf.zeros([hidden1.get_shape()[1], 500]), name="weights")
-                biases = tf.Variable(tf.zeros([500]), name='biases')
+                weights = tf.Variable(tf.zeros([self.layerSize["line"]["hidden1"], lineVectorSize]), name="weights")
+                biases = tf.Variable(tf.zeros([lineVectorSize]), name='biases')
                 lineVector = tf.nn.relu(tf.matmul(hidden1, weights) + biases)
 
         return lineVector
@@ -83,26 +88,29 @@ class NeuralNetworkLanguageModel:
             lineVectors.append(self._getLineVector(lineIndex, line))
 
         lineVectors = tf.concat(1, lineVectors)
+        textVectorSize = (self.history + 1) * (self.lineDim)*WordEmbedding.EMBEDDING_SIZE
+
         with tf.name_scope("text"):
             # Hidden 1
             with tf.name_scope('hidden1'):
-                weights = tf.Variable(tf.zeros([lineVectors.get_shape()[1], 500]), name="weights") # TODO: what value should I use for stddev
-                biases = tf.Variable(tf.zeros([500]), name='biases')
+                weights = tf.Variable(tf.zeros([textVectorSize, self.layerSize["text"]["hidden1"]]), name="weights") # TODO: what value should I use for stddev
+                biases = tf.Variable(tf.zeros([self.layerSize["text"]["hidden1"]]), name='biases')
                 hidden1 = tf.nn.relu(tf.matmul(lineVectors, weights) + biases)
             
             # Text vector
             with tf.name_scope('textVector'):
-                weights = tf.Variable(tf.zeros([hidden1.get_shape()[1], 500]), name="weights") # TODO: what value should I use for stddev
-                biases = tf.Variable(tf.zeros([500]), name='biases')
+                weights = tf.Variable(tf.zeros([self.layerSize["text"]["hidden1"], textVectorSize]), name="weights") # TODO: what value should I use for stddev
+                biases = tf.Variable(tf.zeros([textVectorSize]), name='biases')
                 textVector = tf.nn.relu(tf.matmul(hidden1, weights) + biases)
 
         return textVector
 
     def inference(self, lines):
         textVector = self._getTextVector(lines)
+        textVectorSize = (self.history + 1) * (self.lineDim)*WordEmbedding.EMBEDDING_SIZE
         # Linear
         with tf.name_scope('linear'):
-            weights = tf.Variable(tf.zeros([textVector.get_shape()[1], 2]), name="weights") # TODO: what value should I use for stddev
+            weights = tf.Variable(tf.zeros([textVectorSize, 2]), name="weights") # TODO: what value should I use for stddev
             biases = tf.Variable(tf.zeros([2]), name='biases')
             logits = tf.matmul(textVector, weights) + biases
         
