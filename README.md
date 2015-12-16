@@ -1,11 +1,22 @@
 # Rappers
 Automatic rap lyric generation tool
 
-# Environment #
+# Requirements
 
-# Usage #
-## Construct corpus ##
+- invoke
+- tensorflow
+
+# Usage
+## Neural Network Language Model
+
+- Training
+
 ```
-# pip install beautifulsoup
-python getlyrics.py -v > output.tsv
+inv train model
+```
+
+- Testing
+
+```
+inv test model
 ```
