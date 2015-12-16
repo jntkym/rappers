@@ -10,6 +10,7 @@ import subprocess
 import codecs
 from utils import *
 import unicodedata
+import argparse
 
 reload(sys)
 sys.setdefaultencoding('utf8')
@@ -24,7 +25,7 @@ space_pat = re.compile(u'\s\s+', re.U)
 
 # aux 1.1+
 def translate_non_alphanumerics(to_translate, translate_to=None):
-    not_letters_or_digits = u'!"&#%\'()*＊+,-./:;<=>?@[\]^_`{|}~...…「〜＞ｒ（）＜｀」％＿・'
+    not_letters_or_digits = u'[!&#%\"\'()_`{※+,』\|}~?...…「〜＞ｒ（）＜｀！」？＿％・@＠”’"：；＋ー！。。。、＿・_ _『 □**＊-\.\/:;<=>△?@\[\]\^'
     translate_table = dict((ord(char), translate_to) for char in not_letters_or_digits)
     return to_translate.translate(translate_table)
 
@@ -40,18 +41,18 @@ def clean_lyrics(lyrics_file):
     with open(lyrics_file) as csvfile:
         reader = csv.reader(csvfile, delimiter="\t")
         for row in reader:
-            sentences = row[2].decode("utf-8").strip().split(u"<BR>")
+            sentences = row[2].strip().split(u"<BR>")
             for sentence in sentences:
-
+                sentence = unicode(sentence)
                 sentence = translate_non_alphanumerics(sentence)
-                sentence = space_pat.sub(u' ', sentence.strip())
+                sentence = space_pat.sub(u' ', sentence)
 
                 # delete English
                 # sentence = eng_words_pat.sub(u'', sentence).split(u"\s")
 
                 # sentence = sentence.split(u'')
                 # sentence.append(u".")
-                sentence += u'.'
+                # sentence += u'.'
 
                 if len(sentence) > 1:
                     data_corpus.append(sentence)
@@ -80,37 +81,42 @@ def create_corpus(crawled_lyrics_file, save=False):
     logger.info(" Done kytea processing! ")
 
     pron = []
-    unk_pat = re.compile(u"/.*UNK")
+    unk_pat = re.compile(u"/補助記号/UNK")
     slash_pat = re.compile(ur"\\")
 
     with codecs.open("data/kytea_out.txt", 'UTF-8') as f:
         for line in f:
             line = line.decode(encoding="utf-8").strip()
-            unk_pat.sub(u"", line)
-            slash_pat.sub(u"", line)
+            line = unk_pat.sub(u"", line)
+            line = slash_pat.sub(u"", line)
+
             triplets = line.split(u" ")  # take a look at Kytea output: https://github.com/chezou/Mykytea-python
             seq = []
             for item in triplets:
                 try:
-                    hir = item.split(u"/")[2]
-                    if hir != "UNK":
+                    # hir = item.split(u"/")[2]
+                    # if hir != "UNK":
+                    hir = item.split(u"/")[0]
+                    if hir != "\\":
                         seq.append(hir)
                 except IndexError:
                     continue
 
-            if len(seq) > 3:
-                pron.append(u" ".join(seq))
-            else:
-                pron.append(u"\n")
+            candidate_line = unicodedata.normalize("NFKC", u" ".join(seq))
+            candidate_line = re.sub(u"[A-Za-z]", u"", candidate_line)
+            candidate_line = re.sub(u"\s+", u"", candidate_line)
+            candidate_line = re.sub(u"\d+", u"5", candidate_line)
 
-    NN_input = unicodedata.normalize("NFKC",u"\n".join(pron))
-    NN_input = re.sub(u"\d+",u"5",NN_input)
+            if len(candidate_line) > 10:
+                pron.append(candidate_line)
 
+
+    NN_input = u"\n".join(pron)
     return NN_input
 
 
 # main function - creates input for the NN
-def prepare_NN_input(crawled_lyrics_file, model="keras", savepath=None, maxlen=20, step=3):
+def clean_corpus(crawled_lyrics_file, model="keras", savepath=None):
     """
     Prepares 4 matrices: x_train, y_train, x_test, y_test.
     X matrices are of size N x len(seq) x V:
@@ -132,83 +138,108 @@ def prepare_NN_input(crawled_lyrics_file, model="keras", savepath=None, maxlen=2
             f.write(text)
             logger.info(" Corpus saved into ----->%s " % (savepath))
 
-    if model == "keras":
+            # if model == "keras":
+            #
+            #     chars = set(text)
+            #     vocab_size = len(chars)
+            #     text_size = len(text)
+            #
+            #     print('corpus length:', len(text))
+            #     print('total chars:', vocab_size)
+            #
+            #     char_indices = dict((c, i) for i, c in enumerate(chars))
+            #     indices_char = dict((i, c) for i, c in enumerate(chars))
+            #
+            #     # cut the text in semi-redundant sequences of maxlen characters
+            #
+            #     sentences = []
+            #     next_chars = []
+            #     for i in range(0, len(text) - maxlen, step):
+            #         sentences.append(text[i: i + maxlen])
+            #         next_chars.append(text[i + maxlen])
+            #     print('nb sequences:', len(sentences))
+            #
+            #     print('Vectorization...')
+            #     X = np.zeros((len(sentences), maxlen, len(chars)), dtype=np.bool)
+            #     y = np.zeros((len(sentences), len(chars)), dtype=np.bool)
+            #     for i, sentence in enumerate(sentences):
+            #         for t, char in enumerate(sentence):
+            #             X[i, t, char_indices[char]] = 1
+            #         y[i, char_indices[next_chars[i]]] = 1
+            #
+            #     return X, y, text, char_indices, indices_char
 
-        chars = set(text)
-        vocab_size = len(chars)
-        text_size = len(text)
+            # # the following lines are for theano model only
 
-        print('corpus length:', len(text))
-        print('total chars:', vocab_size)
 
-        char_indices = dict((c, i) for i, c in enumerate(chars))
-        indices_char = dict((i, c) for i, c in enumerate(chars))
 
-        # cut the text in semi-redundant sequences of maxlen characters
+def process_juman_output(juman_outfile):
+    corpus = []
+    daihyou_vocab = {}
 
-        sentences = []
-        next_chars = []
-        for i in range(0, len(text) - maxlen, step):
-            sentences.append(text[i: i + maxlen])
-            next_chars.append(text[i + maxlen])
-        print('nb sequences:', len(sentences))
+    with open(juman_outfile) as csvfile:
+        reader = csv.reader(csvfile, delimiter=str(u" "))
+        sent = []
 
-        print('Vectorization...')
-        X = np.zeros((len(sentences), maxlen, len(chars)), dtype=np.bool)
-        y = np.zeros((len(sentences), len(chars)), dtype=np.bool)
-        for i, sentence in enumerate(sentences):
-            for t, char in enumerate(sentence):
-                X[i, t, char_indices[char]] = 1
-            y[i, char_indices[next_chars[i]]] = 1
+        for line in reader:
+            if line[0] == u"@":
+                continue
 
-        return X, y, text, char_indices, indices_char
+            if line[0] == u"EOS":
+                corpus.append(u" ".join(sent))
+                sent=[]
+                continue
 
-    # the following lines are for theano model only
-    elif model == "theano":
+            if line[11] != "NIL":
+                value = line[11]
+                value = re.sub("代表表記:", u"", value,re.U)
+                value = value.split(u"/")[0]
+            else:
+                value = line[0]
 
-        chars = set(text)
-        # chars.add("EOS")
-        char_indices = dict((c, i) for i, c in enumerate(chars))
-        indices_char = dict((i, c) for i, c in enumerate(chars))
+            key = line[0]
+            daihyou_vocab[key] = value
+            sent.append(key)
+        corpus = u"\n".join(corpus)
 
-        print('corpus length: ', len(text))
-        print('total chars:', len(chars))
 
-        # cut the text into sequences of characters
+    print "All in all unique lemmas: %d" %(len(daihyou_vocab.values()))
 
-        sentences = []
-        next_chars = []
-        for i in range(0, len(text) - maxlen, step):
-            sentences.append(text[i: i + maxlen])  # sequence of 20 chars
-            next_chars.append(text[i + 1: i + maxlen + 1])  # sequence of 20 chars
-        print('nb sequences:', len(sentences))
+    # save a txt corpus file
+    with open("data/string_corpus.txt","w") as f:
+        for line in corpus.split(u"\n"):
+            print >> f, line
 
-        logger.info('Vectorization...')
+    # # save a list corpus file
+    # with open("data/list_corpus.p", "w") as corpusfile:
+    #     pickle.dump(corpus, corpusfile)
 
-        X = np.zeros((len(sentences), maxlen, len(chars)), dtype=np.bool)
-        y = np.zeros((len(sentences), maxlen), dtype=np.int)
+    # save a vocabulary
+    with open("data/daihyou_vocab.p", "w") as vocabfile:
+        pickle.dump(daihyou_vocab, vocabfile)
 
-        for sent_idx, sentence in enumerate(sentences):
+    print "cleaning datadir ..."
+    subprocess.call('rm -f ./data/clean_corpus.txt ./data/kytea_out.txt ./data/cleaned_lyrics.txt',
+                    shell=True)
 
-            # print "\t*sanity check *"
-            # print "sentence: %s" %(sentence)
 
-            for ch_idx, char in enumerate(sentence):
-                X[sent_idx, ch_idx, char_indices[char]] = 1
-                y[sent_idx, ch_idx] = char_indices[next_chars[sent_idx][ch_idx]]
+def main():
+    parser = argparse.ArgumentParser(description="An LSTM language model")
+    parser.add_argument('-juman', help='Preprocess juman file', nargs=1)
+    parser.add_argument('-crawl', help='Preprocess crawled data', nargs=1)
 
-                # print "current character - %s, next character - %s"%(char, next_chars[sent_idx][ch_idx])
+    opts = parser.parse_args()
 
-                # print "\tsanity check over*"
-                # time.sleep(5)
+    if opts.crawl:
+        print "Processing crawled data ..."
+        clean_corpus(opts.crawl[0], savepath="data/clean_corpus.txt")
+        print "Done"
 
-        split_ratio = 0.8
-        x_train = X[:len(sentences) * split_ratio, :, :]
-        y_train = y[:len(sentences) * split_ratio, :]
+    if opts.juman:
+        print "Processing juman output ... "
+        process_juman_output(opts.juman[0])
+        print "Done"
 
-        x_test = X[len(sentences) * split_ratio:, :, :]
-        y_test = y[len(sentences) * split_ratio:, :]
 
-        logger.info(" Done generating NN input! ")
-
-        return text, char_indices, indices_char, x_train, y_train, x_test, y_test
+if __name__ == '__main__':
+    main()
