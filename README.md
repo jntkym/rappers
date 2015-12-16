@@ -1,7 +1,6 @@
 # Rappers
 Automatic rap lyric generation tool
 
-<<<<<<< HEAD
 # Requirements
 
 - invoke
@@ -10,32 +9,13 @@ Automatic rap lyric generation tool
 - kytea
 
 # Usage
-## Neural Network Language Model
-
-- Training
-
-```
-inv train model
-```
-
-- Testing
-
-```
-inv test model
-```
 
 ## Obtain lyrics ##
-=======
-# Environment #
 
-# Usage #
-## Construct corpus ##
->>>>>>> LSTM_LM
 ```
 # pip install beautifulsoup
 python getlyrics.py -v > output.tsv
 ```
-<<<<<<< HEAD
 
 ## Construct corpus ##
 
@@ -52,12 +32,21 @@ juman < data/clean_corpus.txt > data/juman_out.txt
 python preprocess.py -juman data/juman_out.txt
 ```
 
-
 The preprocessing step is finished. You will have two files in the */data* folder:
 
 - *string_corpus.txt* as a corpus file (one sentence per line) 
 - *daihyou_vocab.p* file as a vocabulary file (keys correspond to surface forms, values to 代表表記) - this is used to lookup the embeddings during the LSTM training
 
+## Neural Network Language Model
 
-=======
->>>>>>> LSTM_LM
+- Training
+
+```
+inv train model
+```
+
+- Testing
+
+```
+inv test model
+```
