@@ -1,20 +1,17 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import unicode_literals
+import codecs
 import tensorflow as tf
 import numpy as np
 import yaml
 import sys
-import codecs
 
 from WordEmbedding import WordEmbedding 
 
-sys.stdin  = codecs.getreader('UTF-8')(sys.stdin)
-sys.stdout = codecs.getwriter('UTF-8')(sys.stdout)
-sys.stderr = codecs.getwriter('UTF-8')(sys.stderr)
-
 class NeuralNetworkLanguageModel:
     def __init__(self, configPath="config.yml"):
-        with codecs.open(configPath, "r", "UTF-8") as f:
+        with open(configPath, "r") as f:
             configString = f.read()
             data = yaml.load(configString) 
 
@@ -93,13 +90,13 @@ class NeuralNetworkLanguageModel:
         with tf.name_scope("text"):
             # Hidden 1
             with tf.name_scope('hidden1'):
-                weights = tf.Variable(tf.zeros([textVectorSize, self.layerSize["text"]["hidden1"]]), name="weights") # TODO: what value should I use for stddev
+                weights = tf.Variable(tf.zeros([textVectorSize, self.layerSize["text"]["hidden1"]]), name="weights")
                 biases = tf.Variable(tf.zeros([self.layerSize["text"]["hidden1"]]), name='biases')
                 hidden1 = tf.nn.relu(tf.matmul(lineVectors, weights) + biases)
             
             # Text vector
             with tf.name_scope('textVector'):
-                weights = tf.Variable(tf.zeros([self.layerSize["text"]["hidden1"], textVectorSize]), name="weights") # TODO: what value should I use for stddev
+                weights = tf.Variable(tf.zeros([self.layerSize["text"]["hidden1"], textVectorSize]), name="weights")
                 biases = tf.Variable(tf.zeros([textVectorSize]), name='biases')
                 textVector = tf.nn.relu(tf.matmul(hidden1, weights) + biases)
 
@@ -110,7 +107,7 @@ class NeuralNetworkLanguageModel:
         textVectorSize = (self.history + 1) * (self.lineDim)*WordEmbedding.EMBEDDING_SIZE
         # Linear
         with tf.name_scope('linear'):
-            weights = tf.Variable(tf.zeros([textVectorSize, 2]), name="weights") # TODO: what value should I use for stddev
+            weights = tf.Variable(tf.zeros([textVectorSize, 2]), name="weights")
             biases = tf.Variable(tf.zeros([2]), name='biases')
             logits = tf.matmul(textVector, weights) + biases
         
