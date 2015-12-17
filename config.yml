@@ -2,9 +2,10 @@
 
 # This is a configuration file for NeuralNetworkLanuguageModel
 
+padding: "ｐ"
 lineDelimiter: "||"
 wordDelimiter: ":"
-learningRate: 0.01
+learningRate: 0.001
 history: 3 # How many lines to consider as history
 
 # Parameters used in dope learning paper
