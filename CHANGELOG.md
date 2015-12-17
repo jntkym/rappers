@@ -1,3 +1,4 @@
-# Change Log (0.0.1)
+# Change Log (0.0.2)
 
-- combine everything into develop
+- Add rankSVM
+- NN5 is working(probably?)
