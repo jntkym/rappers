@@ -2,15 +2,15 @@
 from __future__ import division
 import sys
 import codecs
+import getpass
 from optparse import OptionParser
 from random import randint
 from make_features import *
 dummy_fill = u""
 k_prev = 5
 # add more features here, or modify the set of features.
-SCRIPT_PREFIX = "nice -n 19 python feature_extract.py --song_id %s --qid %s > /data/huang/rapper/features/%s.dat"
+SCRIPT_PREFIX = "nice -n 19 python feature_extract.py --song_id %s --qid %s > /data/%s/rapper/features/%s.dat" % ('%s', '%s', getpass.getuser(), '%s')
 ALL_FEATURES = ['LineLength', 'BOW', 'BOW5', 'EndRhyme', 'EndRhyme-1']
-INSTANCE_DIR = "/data/huang/rapper/instances" 
 
 def get_random_line():
     data_path = "data/lyrics_shonan_s27_raw.tsv"
@@ -32,7 +32,12 @@ def get_random_line():
             song_size = len(lines)
             sentence_id = randint(0, song_size - 1)
             # randomly choose a sentence.
-            return lines[sentence_id]
+            if len(lines[sentence_id].split()) != 0:
+                return lines[sentence_id].rstrip()
+            elif u"くり返し" in lines[sentence_id]:
+                return None
+            else :
+                return None
 
 def get_all_features(history, nextLine):
     # add more features here.
@@ -50,8 +55,6 @@ def print_instance_features(qid, history, nextLine, neg_num=1):
     while len(neg_lines) < neg_num:
         randLine = get_random_line()
         if randLine == None:
-            continue
-        if randLine == "":
             continue
         if randLine == nextLine:
             continue
