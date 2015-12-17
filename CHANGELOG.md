@@ -1,4 +1,3 @@
-# Change Log (0.0.2)
+# Change Log (0.0.3)
 
-- Add rankSVM
-- NN5 is working(probably?)
+- Implement memory efficient loading in NN5
