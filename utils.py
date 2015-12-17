@@ -2,6 +2,7 @@
 # -*- coding:utf-8 -*-
 
 # from __future__ import unicode_literals
+import codecs
 import sys
 
 reload(sys)
@@ -26,3 +27,26 @@ ranges = [
 
 def is_cjk(char):
     return any([range["from"] <= ord(char) <= range["to"] for range in ranges])
+
+
+def load_csv_to_dict(filepath, delimiter=','):
+    u"""Load a .csv file to dictionary
+
+    Args:
+    - filepath: path to the csv file
+    - delimiter: delimiter in the csv file
+
+    Input: csv file
+      key,val
+      ...
+
+    Return:
+      dictionary
+    """
+    table = {}
+    with codecs.open(filepath,
+                     'r', encoding='utf-8') as f:
+        for line in f:
+            key, val = line.strip().split(delimiter)
+            table[key] = val
+    return table

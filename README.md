@@ -60,3 +60,18 @@ python features/make_term_vowel_table.py -v --unknown-terms <path-to-unknown-ter
 
 - `data/term_vowel_table.csv`: term to vowel table (each row has `term,vowels`)
 - `data/unknown_terms.txt`: terms that did not have hiragana form in `data/hiragana_corpus.txt`. Currently they are filtered out from the table above
+
+
+## Next line prediction
+```
+python NextLine.py -f data/sample_nextline_prediction_candidates.txt 
+```
+After the processing, you will have the result `test_lyrics.txt`.
+
+Note: You may need to comment out the lines below in `NextLine.py`
+```
+if __name__ == "__main__":
+    ...
+            temp.pop(0)
+            temp.pop(-1)
+```
