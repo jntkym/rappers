@@ -161,6 +161,9 @@ def process_juman_output(juman_outfile):
         corpus = u"\n".join(corpus)
         hiragana_corpus = u"\n".join(hiragana_corpus)
 
+        corpus = re.sub(u"\n\n",u"\n",corpus)
+        hiragana_corpus = re.sub(u"\n\n",u"\n", hiragana_corpus)
+
     print " All in all unique lemmas: %d" %(len(daihyou_vocab.values()))
 
     # save a txt corpus file
