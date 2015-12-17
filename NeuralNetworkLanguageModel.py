@@ -220,12 +220,11 @@ class NeuralNetworkLanguageModel:
         return vectors
 
     def train(self, trainingData, labels, savePath = None):
-        trainingData = self.getLongVectors(trainingData)
         with tf.Session() as sess:
             output = self.inference(self.input_placeholder)
             loss = self.loss(output, self.supervisor_labels_placeholder)
             trainer = self.training(loss)
-            numExample = trainingData.shape[0]
+            numExample = len(trainingData)
             totalBatch = int(numExample/self.batchSize)
             init = tf.initialize_all_variables()
             sess.run(init)
@@ -243,6 +242,7 @@ class NeuralNetworkLanguageModel:
                 print "Model saved in file: ", save_path
 
     def getPermutatedBatch(self, data, labels):
+        data = np.array(data)
         numExample = data.shape[0]
         assert numExample == labels.shape[0]
         totalBatch = int(numExample/self.batchSize)
@@ -252,7 +252,8 @@ class NeuralNetworkLanguageModel:
         labels = labels[perm]
         curIndex = 0
         for i in xrange(totalBatch):
-            yield data[curIndex:curIndex + self.batchSize], labels[curIndex:curIndex + self.batchSize]
+            batchData = self.getLongVectors(data[curIndex:curIndex + self.batchSize])
+            yield batchData, labels[curIndex:curIndex + self.batchSize]
             curIndex += self.batchSize
 
     def predict(self, data, modelPath):
