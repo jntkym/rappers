@@ -22,7 +22,7 @@ input#yo{
 
 textarea{
   width: 600px;
-  height: 300px;
+  height: 260px;
   overflow: auto;
   font-size: 20px;
 }
@@ -38,7 +38,7 @@ textarea{
   margin-left: auto;
   margin-right: auto;
   width: 100%;
-  height: 250px;
+  height: 350px;
   text-align: center;
   position: fixed;
 }
@@ -50,9 +50,11 @@ textarea{
 }
 
 .contents{
-  margin-top: 250px;
+  width: 100%;
+  margin-top: 350px;
   margin-left: auto;
   margin-right: auto;
+  position: fixed;
 }
 
 .caller{
@@ -69,7 +71,7 @@ textarea{
   margin-left: auto;
   margin-right: auto;
   width: 600px;
-  height: 300px;
+  height: 260px;
 }
 
 .footer{
