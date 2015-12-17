@@ -49,7 +49,7 @@ class NeuralNetworkLanguageModel:
                         tf.random_normal([self.layerSize["word"]["hidden1"]]), 
                         name='biases'
                         )
-                hidden1 = tf.nn.relu(tf.matmul(word, weights) + biases)
+                hidden1 = tf.nn.relu(tf.add(tf.matmul(word, weights), biases))
 
             # Hidden 2
             with tf.name_scope('hidden2'):
@@ -61,7 +61,7 @@ class NeuralNetworkLanguageModel:
                         tf.random_normal([self.layerSize["word"]["hidden2"]]), 
                         name='biases'
                         )
-                hidden2 = tf.nn.relu(tf.matmul(hidden1, weights) + biases) 
+                hidden2 = tf.nn.relu(tf.add(tf.matmul(hidden1, weights), biases))
 
             # Word vector
             with tf.name_scope('wordVector'):
@@ -73,7 +73,7 @@ class NeuralNetworkLanguageModel:
                         tf.random_normal([WordEmbedding.EMBEDDING_SIZE]), 
                         name='biases'
                         )
-                wordVector = tf.nn.relu(tf.matmul(hidden2, weights) + biases) 
+                wordVector = tf.nn.relu(tf.add(tf.matmul(hidden2, weights), biases))
 
         return wordVector
 
@@ -99,7 +99,7 @@ class NeuralNetworkLanguageModel:
                         tf.random_normal([self.layerSize["line"]["hidden1"]]), 
                         name='biases'
                         )
-                hidden1 = tf.nn.relu(tf.matmul(wordVectors, weights) + biases)
+                hidden1 = tf.nn.relu(tf.add(tf.matmul(wordVectors, weights), biases))
 
             # Line vector
             with tf.name_scope('lineVector'):
@@ -111,7 +111,7 @@ class NeuralNetworkLanguageModel:
                         tf.random_normal([lineVectorSize]), 
                         name='biases'
                         )
-                lineVector = tf.nn.relu(tf.matmul(hidden1, weights) + biases)
+                lineVector = tf.nn.relu(tf.add(tf.matmul(hidden1, weights), biases))
 
         return lineVector
 
@@ -137,19 +137,19 @@ class NeuralNetworkLanguageModel:
                         tf.random_normal([self.layerSize["text"]["hidden1"]]), 
                         name='biases'
                         )
-                hidden1 = tf.nn.relu(tf.matmul(lineVectors, weights) + biases)
+                hidden1 = tf.nn.relu(tf.add(tf.matmul(lineVectors, weights), biases))
             
             # Text vector
             with tf.name_scope('textVector'):
                 weights = tf.Variable(
-                        tf.zeros([self.layerSize["text"]["hidden1"], textVectorSize]), 
+                        tf.truncated_normal([self.layerSize["text"]["hidden1"], textVectorSize], stddev = 0.1), 
                         name="weights"
                         )
                 biases = tf.Variable(
-                        tf.zeros([textVectorSize]), 
+                        tf.random_normal([textVectorSize]), 
                         name='biases'
                         )
-                textVector = tf.nn.relu(tf.matmul(hidden1, weights) + biases)
+                textVector = tf.nn.relu(tf.add(tf.matmul(hidden1, weights), biases))
 
         return textVector
 
@@ -166,7 +166,7 @@ class NeuralNetworkLanguageModel:
                     tf.random_normal([2]), 
                     name='biases'
                     )
-            logits = tf.matmul(textVector, weights) + biases
+            logits = tf.add(tf.matmul(textVector, weights), biases)
         
         return logits
 
@@ -198,7 +198,7 @@ class NeuralNetworkLanguageModel:
         return loss
 
     def training(self, loss):
-        trainer = tf.train.GradientDescentOptimizer(self.learningRate).minimize(loss) 
+        trainer = tf.train.AdagradOptimizer(self.learningRate).minimize(loss) 
         return trainer
 
     def getLongVectors(self, trainingData):
