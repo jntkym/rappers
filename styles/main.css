@@ -1,0 +1,83 @@
+html, body{
+  margin: 0;
+  padding: 0;
+  background-color: #fff; 
+  font-family: 'Yantramanav', sans-serif;
+}
+
+a{
+  text-decoration: none;
+}
+
+h1{
+  font-size: 50px;
+  font-family: 'Oleo Script Swash Caps', cursive;
+}
+
+input#yo{
+  width: 120px;
+  height: 30px;
+  font-size: 1.2em;
+}
+
+textarea{
+  width: 600px;
+  height: 300px;
+  overflow: auto;
+  font-size: 20px;
+}
+
+.wrapper{
+  width: 100%;
+  margin: 0 auto;
+
+}
+
+.header{
+  margin-top: 0px;
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+  height: 250px;
+  text-align: center;
+  position: fixed;
+}
+
+.description{
+}
+
+.menu{
+}
+
+.contents{
+  margin-top: 250px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.caller{
+  margin-top: 10px;
+  margin-left: auto;
+  margin-right: auto;
+  width: 600px;
+  height: 30px;
+  text-align: center;
+}
+
+.result{
+  margin-top: 30px;
+  margin-left: auto;
+  margin-right: auto;
+  width: 600px;
+  height: 300px;
+}
+
+.footer{
+  margin-top: 10px;
+  margin-left: auto;
+  margin-right: auto;
+  width: 600px;
+  height: 10px;
+  font-size: 15px;
+  text-align: center;
+}
