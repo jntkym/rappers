@@ -59,7 +59,9 @@ def get_phonetic_transcription(text, output_fname=None):
                 yomi = en_kana_table[yomi]
             m = r.search(yomi)
             if m is not None:
-                print(m.group(0))
+                # use stderr to print if needed.
+                #sys.stderr.write(m.group(0))
+                pass
             for idx in range(len(yomi)):
                 kana = yomi[idx]
                 if kana == u'ー':
