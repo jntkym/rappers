@@ -22,6 +22,7 @@ class NeuralNetworkLanguageModel:
 
         self.history = data["history"]
         self.lineDim = data["lineDim"]
+        self.batchSize = data["batchSize"]
         self.learningRate = data["learningRate"]
         self.lineDelimiter = data["lineDelimiter"]
         self.wordDelimiter = data["wordDelimiter"]
@@ -220,8 +221,6 @@ class NeuralNetworkLanguageModel:
 
     def train(self, trainingData, labels, savePath = None):
         trainingData = self.getLongVectors(trainingData)
-        feed_dict={self.input_placeholder: trainingData, self.supervisor_labels_placeholder: labels}
-
         with tf.Session() as sess:
             output = self.inference(self.input_placeholder)
             loss = self.loss(output, self.supervisor_labels_placeholder)
@@ -231,12 +230,28 @@ class NeuralNetworkLanguageModel:
             sess.run(init)
             saver = tf.train.Saver()
             for step in xrange(self.iteration):
-                sess.run(trainer, feed_dict=feed_dict)
+                averageCost = 0.0
+                for batch in self.getPermutatedBatch(trainingData):
+                    feed_dict={self.input_placeholder: batch, self.supervisor_labels_placeholder: labels}
+                    sess.run(trainer, feed_dict=feed_dict)
+                    averageCost += sess.run(loss, feed_dict=feed_dict)
                 if step % 1 == 0:
-                    print "Loss in iteration %d = %f" % (step + 1, sess.run(loss, feed_dict=feed_dict))
+                    print "Loss in iteration %d = %f" % (step + 1)
             if savePath:
                 save_path = saver.save(sess, "model")
                 print "Model saved in file: ", save_path
+
+    def getPermutatedBatch(self, data, labels):
+        numExample = self.trainingData.shape[0]
+        totalBatch = int(numExample/self.batchSize)
+        perm = numpy.arange(numExample)
+        numpy.random.shuffle(perm)
+        data = data[perm]
+        labels = labels[perm]
+
+        for i in totalBatch:
+            yield data[i*self.batchSize:i*self.batchSize + self.batchSize]
+         
 
     def predict(self, data, modelPath):
         data = self.getLongVectors(data)
@@ -250,7 +265,7 @@ class NeuralNetworkLanguageModel:
             print "Model restored."
             output = sess.run(output, feed_dict=feed_dict)
             result = sess.run(tf.argmax(output,1))
-            return result  
+            return result
 
     def next_batch(self, batch_size):
         raise NotImplemented
