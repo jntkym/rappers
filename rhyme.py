@@ -5,6 +5,7 @@ import argparse
 from csv import DictReader
 import codecs
 import logging
+from os import path
 import re
 import sys
 
@@ -12,24 +13,40 @@ from pyknp import Juman
 
 import preprocess
 
-
 reload(sys)
 sys.setdefaultencoding('utf8')
 
 verbose = False
 logger = None
 
-PATH_KANA_VOWEL_TABLE = './data/kana_vowel_table.csv'
-PATH_EN_KANA_TABLE = './data/en_kana_table.csv'
+DIR_SCRIPT = path.dirname(path.abspath(__file__))
+DIR_ROOT = DIR_SCRIPT  # TODO: move this file to ./features
+
+PATH_KANA_VOWEL_TABLE = path.join(DIR_ROOT,
+                                  'data/kana_vowel_table.csv')
+PATH_EN_KANA_TABLE = path.join(DIR_ROOT,
+                               'data/en_kana_table.csv')
 
 def init_logger():
     global logger
-    logger = logging.getLogger('Logger')  # to be changed
-    logger.setLevel(logging.DEBUG)
+    logger = logging.getLogger('Rhyme')
+    logger.setLevel(logging.WARNING)
     log_fmt = '%(asctime)s/%(name)s[%(levelname)s]: %(message)s'
     logging.basicConfig(format=log_fmt)
 
-def get_phonetic_transcription(text, output_fname=None):
+def get_phonetic_transcription(text, table_term_vowels):
+    result = []
+    for chunk in text.split():
+        try:
+            result.append(table_term_vowels[chunk])
+        except KeyError:
+            pass
+    return ' '.join(result)
+
+
+def get_phonetic_transcription_juman(text):
+    u"""Return vowels using juman (slow)
+    """
     r = re.compile(u'\w+')
     juman = Juman()
     # (Hira+Kata)Kana -> vowel
