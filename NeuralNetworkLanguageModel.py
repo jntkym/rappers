@@ -225,33 +225,35 @@ class NeuralNetworkLanguageModel:
             output = self.inference(self.input_placeholder)
             loss = self.loss(output, self.supervisor_labels_placeholder)
             trainer = self.training(loss)
-
+            numExample = trainingData.shape[0]
+            totalBatch = int(numExample/self.batchSize)
             init = tf.initialize_all_variables()
             sess.run(init)
             saver = tf.train.Saver()
             for step in xrange(self.iteration):
                 averageCost = 0.0
-                for batch in self.getPermutatedBatch(trainingData):
-                    feed_dict={self.input_placeholder: batch, self.supervisor_labels_placeholder: labels}
+                for _input, _labels in self.getPermutatedBatch(trainingData, labels):
+                    feed_dict={self.input_placeholder: _input, self.supervisor_labels_placeholder: _labels}
                     sess.run(trainer, feed_dict=feed_dict)
                     averageCost += sess.run(loss, feed_dict=feed_dict)
                 if step % 1 == 0:
-                    print "Loss in iteration %d = %f" % (step + 1)
+                    print "Loss in iteration %d = %f" % (step + 1, averageCost/totalBatch)
             if savePath:
                 save_path = saver.save(sess, "model")
                 print "Model saved in file: ", save_path
 
     def getPermutatedBatch(self, data, labels):
-        numExample = self.trainingData.shape[0]
+        numExample = data.shape[0]
+        assert numExample == labels.shape[0]
         totalBatch = int(numExample/self.batchSize)
-        perm = numpy.arange(numExample)
-        numpy.random.shuffle(perm)
+        perm = np.arange(numExample)
+        np.random.shuffle(perm)
         data = data[perm]
         labels = labels[perm]
-
-        for i in totalBatch:
-            yield data[i*self.batchSize:i*self.batchSize + self.batchSize]
-         
+        curIndex = 0
+        for i in xrange(totalBatch):
+            yield data[curIndex:curIndex + self.batchSize], labels[curIndex:curIndex + self.batchSize]
+            curIndex += self.batchSize
 
     def predict(self, data, modelPath):
         data = self.getLongVectors(data)
