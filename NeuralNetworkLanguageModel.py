@@ -41,11 +41,11 @@ class NeuralNetworkLanguageModel:
             # Hidden 1
             with tf.name_scope('hidden1'):
                 weights = tf.Variable(
-                        tf.random_uniform([WordEmbedding.EMBEDDING_SIZE, self.layerSize["word"]["hidden1"]]), 
+                        tf.zeros([WordEmbedding.EMBEDDING_SIZE, self.layerSize["word"]["hidden1"]]), 
                         name="weights"
                         )
                 biases = tf.Variable(
-                        tf.random_uniform([self.layerSize["word"]["hidden1"]]), 
+                        tf.zeros([self.layerSize["word"]["hidden1"]]), 
                         name='biases'
                         )
                 hidden1 = tf.nn.relu(tf.matmul(word, weights) + biases)
@@ -53,11 +53,11 @@ class NeuralNetworkLanguageModel:
             # Hidden 2
             with tf.name_scope('hidden2'):
                 weights = tf.Variable(
-                        tf.random_uniform([self.layerSize["word"]["hidden1"], self.layerSize["word"]["hidden2"]]), 
+                        tf.zeros([self.layerSize["word"]["hidden1"], self.layerSize["word"]["hidden2"]]), 
                         name="weights"
                         )
                 biases = tf.Variable(
-                        tf.random_uniform([self.layerSize["word"]["hidden2"]]), 
+                        tf.zeros([self.layerSize["word"]["hidden2"]]), 
                         name='biases'
                         )
                 hidden2 = tf.nn.relu(tf.matmul(hidden1, weights) + biases) 
@@ -65,11 +65,11 @@ class NeuralNetworkLanguageModel:
             # Word vector
             with tf.name_scope('wordVector'):
                 weights = tf.Variable(
-                        tf.random_uniform([self.layerSize["word"]["hidden2"], WordEmbedding.EMBEDDING_SIZE]), 
+                        tf.zeros([self.layerSize["word"]["hidden2"], WordEmbedding.EMBEDDING_SIZE]), 
                         name="weights"
                         )
                 biases = tf.Variable(
-                        tf.random_uniform([WordEmbedding.EMBEDDING_SIZE]), 
+                        tf.zeros([WordEmbedding.EMBEDDING_SIZE]), 
                         name='biases'
                         )
                 wordVector = tf.nn.relu(tf.matmul(hidden2, weights) + biases) 
@@ -91,11 +91,11 @@ class NeuralNetworkLanguageModel:
             # Hidden 1
             with tf.name_scope('hidden1'):
                 weights = tf.Variable(
-                        tf.random_uniform([lineVectorSize, self.layerSize["line"]["hidden1"]]), 
+                        tf.zeros([lineVectorSize, self.layerSize["line"]["hidden1"]]), 
                         name="weights"
                         )
                 biases = tf.Variable(
-                        tf.random_uniform([self.layerSize["line"]["hidden1"]]), 
+                        tf.zeros([self.layerSize["line"]["hidden1"]]), 
                         name='biases'
                         )
                 hidden1 = tf.nn.relu(tf.matmul(wordVectors, weights) + biases)
@@ -103,11 +103,11 @@ class NeuralNetworkLanguageModel:
             # Line vector
             with tf.name_scope('lineVector'):
                 weights = tf.Variable(
-                        tf.random_uniform([self.layerSize["line"]["hidden1"], lineVectorSize]), 
+                        tf.zeros([self.layerSize["line"]["hidden1"], lineVectorSize]), 
                         name="weights"
                         )
                 biases = tf.Variable(
-                        tf.random_uniform([lineVectorSize]), 
+                        tf.zeros([lineVectorSize]), 
                         name='biases'
                         )
                 lineVector = tf.nn.relu(tf.matmul(hidden1, weights) + biases)
@@ -129,11 +129,11 @@ class NeuralNetworkLanguageModel:
             # Hidden 1
             with tf.name_scope('hidden1'):
                 weights = tf.Variable(
-                        tf.random_uniform([textVectorSize, self.layerSize["text"]["hidden1"]]), 
+                        tf.zeros([textVectorSize, self.layerSize["text"]["hidden1"]]), 
                         name="weights"
                         )
                 biases = tf.Variable(
-                        tf.random_uniform([self.layerSize["text"]["hidden1"]]), 
+                        tf.zeros([self.layerSize["text"]["hidden1"]]), 
                         name='biases'
                         )
                 hidden1 = tf.nn.relu(tf.matmul(lineVectors, weights) + biases)
@@ -141,11 +141,11 @@ class NeuralNetworkLanguageModel:
             # Text vector
             with tf.name_scope('textVector'):
                 weights = tf.Variable(
-                        tf.random_uniform([self.layerSize["text"]["hidden1"], textVectorSize]), 
+                        tf.zeros([self.layerSize["text"]["hidden1"], textVectorSize]), 
                         name="weights"
                         )
                 biases = tf.Variable(
-                        tf.random_uniform([textVectorSize]), 
+                        tf.zeros([textVectorSize]), 
                         name='biases'
                         )
                 textVector = tf.nn.relu(tf.matmul(hidden1, weights) + biases)
@@ -158,11 +158,11 @@ class NeuralNetworkLanguageModel:
         # Linear
         with tf.name_scope('linear'):
             weights = tf.Variable(
-                    tf.random_uniform([textVectorSize, 2]), 
+                    tf.zeros([textVectorSize, 2]), 
                     name="weights"
                     )
             biases = tf.Variable(
-                    tf.random_uniform([2]), 
+                    tf.zeros([2]), 
                     name='biases'
                     )
             logits = tf.matmul(textVector, weights) + biases
