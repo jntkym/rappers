@@ -268,6 +268,3 @@ class NeuralNetworkLanguageModel:
             output = sess.run(output, feed_dict=feed_dict)
             result = sess.run(tf.argmax(output,1))
             return result
-
-    def next_batch(self, batch_size):
-        raise NotImplemented
