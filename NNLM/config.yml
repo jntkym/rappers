@@ -8,6 +8,10 @@ wordDelimiter: ":"
 learningRate: 0.0001
 history: 3 # How many lines to consider as history
 
+# https://www.tensorflow.org/versions/master/how_tos/using_gpu/index.html
+device: '/cpu:0' 
+# device: '/gpu:0'
+
 # Parameters used in dope learning paper
 lineDim: 13 # How many words does a line contain?
 iteration: 20 # iteration in training
