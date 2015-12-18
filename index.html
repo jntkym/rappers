@@ -1,10 +1,22 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charsey="utf-8">
+<meta charset="utf-8">
 <link rel="stylesheet" type="text/css" href="styles/main.css">
 <link href='https://fonts.googleapis.com/css?family=Oleo+Script+Swash+Caps|Yantramanav' rel='stylesheet' type='text/css'>
 <title>Mild Learning</title>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+<script src="./js/jquery.xdomainajax.js"></script>
+<script>
+function get_lyrics(){
+  document.getElementById('lyrics').value = '';
+  url = 'http://lotus.kuee.kyoto-u.ac.jp/~otani/hacku15/api/get_lyric.py';
+  $.get(url, function(data){
+    var content = data.responseText;
+    document.getElementById('lyrics').value = content.replace(/<("[^"]*"|'[^']*'|[^'">])*>/g,'');
+  });
+};
+</script>
 </head>
 <body>
 <div class="wrapper">
@@ -20,15 +32,11 @@
 <br>
 <div class="contents">
 <div class="caller">
-<form action="cgi-bin/caller.py" method="get">
-<input id="yo" type="submit" name="submit" value="Yo!">
+<form action="#">
+<input id="yo" type="button" value="Yo!" onclick="get_lyrics();">
 </form>
-</div>
 <div class="result">
-<textarea id="lyrics" col="300" row="20">
-大親友の彼女の連れ おいしいパスタ作ったお前
-家庭的な女がタイプの俺 一目惚れ
-</textarea>
+<textarea id="lyrics" readonly></textarea>
 </div>
 <br>
 <div class="footer">
