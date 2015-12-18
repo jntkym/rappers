@@ -7,6 +7,7 @@ Automatic rap lyric generation tool
 - tensorflow
 - juman
 - kytea
+- chainer
 
 # Usage
 
@@ -50,6 +51,24 @@ inv train model
 ```
 inv test model
 ```
+
+
+## Chainer LSTM LM 
+- Training
+
+run the command below at the directory `chainer_model`
+ 
+```
+python train_lstm_lm.py (--gpu 0)
+```
+You should use gpu to train (this code is very slow on cpu)
+
+- Generating lines
+
+```
+python generate_seq.py --model trained_model -O output_file N 10000
+```
+
 
 
 ## Rhyme
