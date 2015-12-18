@@ -3,7 +3,10 @@ from __future__ import print_function, division
 
 from argparse import ArgumentParser
 import math
+import os
 import sys
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+import utils
 import time
 
 import numpy as np
@@ -69,13 +72,18 @@ def make_initial_state(batchsize=1, train=True):
             for name in ('c1', 'h1', 'c2', 'h2')}
 
 
+def increase_prob_of_mild_words(probability):
+    for word in ["テンション", "絆", "パスタ", "仲間", "お前", "親友", "連れ", "マジ", "濡れた", "家庭", "女"]:
+        if probability[vocab[word]] != 0:
+            probability[vocab[word]] += 0.1
+    
+
 def generate_line():
     # start with <s> :1 is assigned to <s>
     index = 1
     # start with random word or particular word
-    # index = vocab["パスタ"]
+    # index = vocab["大"]
     # index = np.random.randint(3, len(vocab))
-
     cur_word = xp.array([index], dtype=xp.int32)
 
     state = make_initial_state(batchsize=1, train=False)
@@ -83,30 +91,39 @@ def generate_line():
         for key, value in state.items():
             value.data = cuda.to_gpu(value.data)
 
-    state, predict = forward_one_step(cur_word, state, train=False)
-    probability = cuda.to_cpu(predict.data)[0].astype(np.float64)
-    probability /= np.sum(probability)
-    index = np.random.choice(range(len(probability)), p=probability)
-    cur_word = xp.array([index], dtype=xp.int32)
-
     seq_len = 1
-    while(index != 2):  # 2 is assigned to </s>
-        print(inv_vocab[index], file=args.output_file, end=" ")
-
+    while(1):
         state, predict = forward_one_step(cur_word, state, train=False)
         probability = cuda.to_cpu(predict.data)[0].astype(np.float64)
+        # max_30_list = []
+        # temp_max = 0
+        # for j in xrange(len(probability)):
+            # if probability[j] > temp_max:
+                # if probability[j] not in max_30_list:
+                    # temp_max = probability[j]
+            # max_30_list.append(temp_max)
+        sorted_prob = sorted(probability, reverse=True)
+        max_30_list = sorted_prob[:30]
+        for i in xrange(len(probability)):
+            if probability[i] not in max_30_list:
+                probability[i] = 0
+        probability /= np.sum(probability)
+        increase_prob_of_mild_words(probability)
         probability /= np.sum(probability)
         index_temp = np.random.choice(range(len(probability)), p=probability)
         # index_temp = cuda.to_cpu(predict.data)[0].astype(np.float64).argmax()
 
-        if seq_len < 10 and index_temp == 1:
+        if seq_len < 10 and index_temp == 2:
             seq_len += 1
             continue
         else:
             index = index_temp
 
+        if index == 2: # 2 is assigned to </s>            
+            break
         cur_word = xp.array([index], dtype=np.int32)
-
+        print(inv_vocab[index], file=args.output_file, end=" ")
+        
         seq_len += 1
         if seq_len > 30:
             break

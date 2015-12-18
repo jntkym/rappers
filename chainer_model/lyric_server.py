@@ -5,6 +5,9 @@ from argparse import ArgumentParser
 import math
 import sys
 import time
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+import utils
 
 import numpy as np
 
@@ -25,6 +28,7 @@ p.add_argument('-O', '--output_file', type=str, default=sys.stderr,
                help='output file (default: stderr)')
 p.add_argument('-N', '--n_lines', type=int, default=1000,
                help='num of lines')
+p.add_argument('-H', '--highquality', default=False, action="store_true")
 
 args = p.parse_args()
 
@@ -48,7 +52,21 @@ if args.gpu >= 0:
 if args.gpu < 0:
     model.to_cpu()
 
+# load mild yankee dict
+mild_yankee_dict = utils.load_csv_to_dict("mild_dict.csv")
 
+
+def force_mild(state, line, word_id):
+    cur_word = xp.array([word_id], dtype=np.int32)
+    state, predict = forward_one_step(cur_word, state, train=False)
+    if mild_yankee_dict.has_key(unicode(inv_vocab[word_id])):
+        for next_word in mild_yankee_dict[unicode(inv_vocab[word_id])].split():
+            line.append(next_word)
+            next_word_id = xp.array([vocab[next_word]], dtype=np.int32)
+            state, predict = forward_one_step(next_word_id, state, train=False)
+    return predict
+
+    
 def forward_one_step(x_data, state, train=True):
     if args.gpu >= 0:
         x_data = cuda.to_gpu(x_data)
@@ -79,44 +97,46 @@ def generate_line(seed=None):
     if args.gpu >= 0:
         for key, value in state.items():
             value.data = cuda.to_gpu(value.data)
-            
-    if seed is None:
-        index = 1
-        cur_word = xp.array([index], dtype=xp.int32)
-        
-    else:
+
+    index = 1
+    cur_word = xp.array([index], dtype=xp.int32)
+    
+    if seed is not None:
         for word in seed:
+            state, predict = forward_one_step(cur_word, state, train=False)
             index = vocab[word]
             cur_word = xp.array([index], dtype=xp.int32)
-            state, predict = forward_one_step(cur_word, state, train=False)
-            line.append(inv_vocab[index])            
+            if index != 1:
+                line.append(inv_vocab[index])            
 
     if index == 1:
         state, predict = forward_one_step(cur_word, state, train=False)
         probability = cuda.to_cpu(predict.data)[0].astype(np.float64)
         probability /= np.sum(probability)
         index = np.random.choice(range(len(probability)), p=probability)
-        cur_word = xp.array([index], dtype=xp.int32)
         line.append(inv_vocab[index])
-
-    seq_len = 1
-    while(1):  
-        state, predict = forward_one_step(cur_word, state, train=False)
-        probability = cuda.to_cpu(predict.data)[0].astype(np.float64)
-        probability /= np.sum(probability)
-        index_temp = np.random.choice(range(len(probability)), p=probability)
-        # index_temp = cuda.to_cpu(predict.data)[0].astype(np.float64).argmax()
         
-        if seq_len < 10 and index_temp == 2:
+    seq_len = 1
+    while(1):
+        predict = force_mild(state, line, index)
+        probability = cuda.to_cpu(predict.data)[0].astype(np.float64)
+        if args.highquality:
+            sorted_prob = sorted(probability, reverse=True)
+            max_30_list = sorted_prob[:30]
+            for i in xrange(len(probability)):
+                if probability[i] not in max_30_list:
+                    probability[i] = 0
+        probability /= np.sum(probability)
+        index = np.random.choice(range(len(probability)), p=probability)
+        # index = cuda.to_cpu(predict.data)[0].astype(np.float64).argmax()
+        
+        if seq_len < 10 and index == 2:
             seq_len += 1
             continue
-        else:
-            index = index_temp
 
         if index == 2: # 2 is assigned to </s>
             break
 
-        cur_word = xp.array([index], dtype=np.int32)
         line.append(inv_vocab[index])
 
         seq_len += 1
@@ -140,12 +160,12 @@ if __name__ == '__main__':
             continue
         try:
             s.bind(sa)
-            s.listen(1)
+            s.listen(5)
         except socket.error, msg:
             s.close()
             s = None
             continue
-            break
+        break
     if s is None:
         print('could not open socket')
         sys.exit(1)
@@ -177,13 +197,13 @@ if __name__ == '__main__':
             os.kill(pid, 9)
             break
         else:
-            # if vocab[data] != 0:
-            for i in xrange(args.n_lines):
-                line = generate_line(seed)
-                conn.send(line)
+            if "<unk>" in [inv_vocab[vocab[word]] for word in seed]:
+                conn.send("sorry, out of vocabulary ...")
+            else:
+                for i in xrange(args.n_lines):
+                    line = generate_line(seed)
+                    conn.send(line)
             conn.send("finish")
-            # else:
-                # print("sorry %s is out of vocabulary" % data)
 
     conn.close()
     sys.exit()
