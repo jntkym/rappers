@@ -4,10 +4,11 @@ import sys
 import re
 import codecs
 import getpass
+import cdb
 from optparse import OptionParser
 from random import randint
 from make_features import *
-from NeuralNetworkLanguageModel import *
+#from NeuralNetworkLanguageModel import *
 dummy_fill = u""
 k_prev = 5
 # add more features here, or modify the set of features.
@@ -15,33 +16,27 @@ SCRIPT_PREFIX = "nice -n 19 python feature_extract.py --song_id %s --qid %s > /d
 ALL_FEATURES = ['LineLength', 'BOW', 'BOW5', 'EndRhyme', 'EndRhyme-1', 'NN3']
 
 def get_random_line():
-    data_path = "data/lyrics_shonan_s27_raw.tsv"
-    with open(data_path, "r") as data:
-        data_size = sum([1 for _ in data])
+    data_path = "data/string_corpus.cdb"
+    data = cdb.init(data_path)
     # randomly choose a song.
+    data_size = len(data)
     song_id = randint(1, data_size)
-    with codecs.open(data_path, "r", encoding="utf-8") as data:
-        for i, song in enumerate(data):
-            if i != song_id:
-                continue
-            temp_split = song.split("\t")
-            # 要素数が足りない時はreturn None.
-            if len(temp_split) < 2:
-                return None
-            artist, title, text = temp_split[0], temp_split[1], temp_split[2:]
-            text = u" ".join(text)
-            lines = text.split(u"<BR>")
-            song_size = len(lines)
-            sentence_id = randint(0, song_size - 1)
-            # randomly choose a sentence.
-            if len(lines[sentence_id].split()) != 0:
-                return lines[sentence_id].rstrip()
-            elif u"くり返し" in lines[sentence_id]:
-                return None
-            else :
-                return None
+    thisSong = data.get("%s" % (song_id))
+    thisSong = thisSong.split('\n')
+    # randomly choose a sentence.
+    song_size = len(thisSong)
+    sentence_id = randint(0, song_size - 1)
+    thisSentence = thisSong[sentence_id]
+
+    if u"くり返し" in thisSentence:
+        return None
+    if len(thisSentence.split()) != 0:
+        return thisSentence
+    else :
+        return None
 
 def get_NN3_feature(nextLine, history):
+    '''
     # preprocess og test data.
     nextLine = re.sub(" ", "||", nextLine) 
     history = map(lambda x: re.sub(" ", "||", x), history)
@@ -49,6 +44,7 @@ def get_NN3_feature(nextLine, history):
     # get NN% feature.
     lm = NeuralNetworkLanguageMode()
     sys.stderr.write("%s\n" % (lm.predict(testData, "/home/otsuki/nn3.model.10000")))
+    '''
     return 0
 
 def get_all_features(history, nextLine):
@@ -60,7 +56,7 @@ def get_all_features(history, nextLine):
     endrhyme_1 = calc_endrhyme_score(nextLine, history[-2])
     NN3 = get_NN3_feature(nextLine, history[:-3])
     return {'LineLength' : line_length, 'BOW' : BoW, 'BOW5' : BoW5, \
-            'EndRhyme' : endrhyme, 'EndRhyme-1' : endrhyme_1}
+            'EndRhyme' : endrhyme, 'EndRhyme-1' : endrhyme_1, 'NN3' : NN3}
 
 def print_instance_features(qid, history, nextLine, neg_num=1):
     # randomly sample nextline as negative examples.
@@ -89,53 +85,36 @@ def print_instance_features(qid, history, nextLine, neg_num=1):
         print "%s qid:%s %s" % (target, qid, feature_str)
 
 def print_song_features(song_id, start_qid):
-    data_path = "data/lyrics_shonan_s27_raw.tsv"
+    data_path = "data/string_corpus.cdb"
+    data = cdb.init(data_path)
     qid_now = start_qid
-    with codecs.open(data_path, "r", encoding="utf-8") as data:
-        for i, song in enumerate(data):
-            if i != song_id:
-                continue
-            # start processing song.
-            prev_lines = [dummy_fill for _ in xrange(k_prev)]
-            temp_split = song.split("\t")
-            artist, title, text = temp_split[0], temp_split[1], temp_split[2:]
-            text = u" ".join(text)
-            lines = text.split(u"<BR>")
-            for line in lines:
-                line = line.strip()
-                if line == "":
-                    continue
-                print_instance_features(qid_now, prev_lines, line)
-                # maintainance.
-                qid_now += 1
-                prev_lines.append(line)
-                if len(prev_lines) > k_prev:
-                    del prev_lines[0]
+    thisSong = data.get("%s" % (song_id))
+    # start processing song.
+    prev_lines = [dummy_fill for _ in xrange(k_prev)]
+    for line in thisSong.split('\n'):
+        line = line.rstrip()
+        if line == "":
+            continue
+        print_instance_features(qid_now, prev_lines, line)
+        # maintainance.
+        qid_now += 1
+        prev_lines.append(line)
+        if len(prev_lines) > k_prev:
+            del prev_lines[0]
 
 def generate_task():
-    data_path = "data/lyrics_shonan_s27_raw.tsv"
+    data_path = "data/string_corpus.cdb"
+    data = cdb.init(data_path)
+    data_size = len(data)
     qid_now = 0
-    with codecs.open(data_path, "r", encoding="utf-8") as data:
-        for i, song in enumerate(data):
-            # 1行目は飛ばす
-            if i == 0:
+    for i in range(data_size):
+        # print task.
+        print SCRIPT_PREFIX % (i, qid_now, i)
+        thisSong = data.get("%s" % (i))
+        for line in thisSong.split('\n'):
+            if line.rstrip() =="":
                 continue
-            # 要素数が足りない時はcontinue
-            temp_split = song.split("\t")
-            if len(temp_split) < 2:
-                sys.stderr.write("too few elements: Song-id %s\n" % (i))
-                continue
-            # print task.
-            print SCRIPT_PREFIX % (i, qid_now, i)
-            #
-            artist, title, text = temp_split[0], temp_split[1], temp_split[2:]
-            text = u" ".join(text)
-            lines = text.split(u"<BR>")
-            for line in lines:
-                line = line.strip()
-                if line == "":
-                    continue
-                qid_now += 1
+            qid_now += 1
     sys.stderr.write("Total number of instance: %s\n" % (qid_now))
 
 if __name__ == '__main__':
@@ -148,4 +127,5 @@ if __name__ == '__main__':
     parser.add_option("-q", "--qid", action="store", type="int", dest='qid')
     options, args = parser.parse_args()
 
+    #generate_task()
     print_song_features(options.song_id, options.qid)
