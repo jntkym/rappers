@@ -34,7 +34,7 @@ textarea{
   overflow: auto;
   font-size: 20px;
   background-color: transparent;
-  border: 1px black solid;
+  border: 3px black solid;
 }
 
 .wrapper{
