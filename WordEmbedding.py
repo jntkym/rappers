@@ -10,8 +10,8 @@ sys.stderr = codecs.getwriter('UTF-8')(sys.stderr)
 # http://www.asahi-net.or.jp/~ax2s-kmtn/ref/unicode/u3040.html 
 
 class WordEmbedding:
-    PADDING = u"％"
-    CHARACTERS = u"ぐだばむゐぁけちぱめゑあげぢひもをぃこっびゃんいごつぴやゔぅさづふゅゕうざてぶゆゖぇしでぷょえじとへよぉすどべらおずなぺりかせにほるがぜぬぼれきそねぽろぎぞのまゎくたはみわゟＡＢＣＤＥＦＧＨＩＪＫＬＭＮＯＰＱＲＳＴＵＶＷＸＹＺ"
+    PADDING = u"ｐ"
+    CHARACTERS = u"ぐだばむゐぁけちぱめゑあげぢひもをぃこっびゃんいごつぴやゔぅさづふゅゕうざてぶゆゖぇしでぷょえじとへよぉすどべらおずなぺりかせにほるがぜぬぼれきそねぽろぎぞのまゎくたはみわゟＡＢＣＤＥＦＧＨＩＪＫＬＭＮＯＰＱＲＳＴＵＶＷＸＹＺ。！？０１２３４５６７８９ー〜"
     VOCAB = PADDING + CHARACTERS
     EMBEDDING_SIZE = len(VOCAB)*3
     ALPHA = 0.2
@@ -28,6 +28,8 @@ class WordEmbedding:
         wordlen = normalizer = len(word_list)
         for position in range(len(word_list)):
             w = word_list[position]
+            if w not in self.VOCAB:
+                continue
             self.frequency[w] += 1
 
             index = self.VOCAB.index(w)

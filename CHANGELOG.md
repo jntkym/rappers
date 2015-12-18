@@ -1,3 +1,3 @@
-# Change Log (0.0.1)
+# Change Log (0.0.3)
 
-- combine everything into develop
+- Implement memory efficient loading in NN5
