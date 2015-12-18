@@ -5,7 +5,7 @@
 padding: "ｐ"
 lineDelimiter: "||"
 wordDelimiter: ":"
-learningRate: 0.001
+learningRate: 0.0001
 history: 3 # How many lines to consider as history
 
 # Parameters used in dope learning paper

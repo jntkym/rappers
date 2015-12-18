@@ -6,12 +6,15 @@ import codecs
 from optparse import OptionParser
 from feature_extract import *
 
+from os import path
+
 class NextLine(object):
-    def __init__(self, all_candidate_file, history_file, model, num):
+    def __init__(self, all_candidate_file, history_file, model, num,
+                 tmp_dir='.'):
         self.model = model
-        self.candidate_file = "./small_candidate.txt"
-        self.feature_file = "./small_feature.dat"
-        self.predict_file = "./small_predict.txt"
+        self.candidate_file = path.join(tmp_dir, "small_candidate.txt")
+        self.feature_file = path.join(tmp_dir, "small_feature.dat")
+        self.predict_file = path.join(tmp_dir, "small_predict.txt")
         self.history = []
 
         self.preprocess(all_candidate_file, history_file, num)

@@ -76,6 +76,32 @@ def calc_endrhyme_score(line1, line2):
     return n_matches
 
 
+def calc_endrhyme_score_juman(line1, line2):
+    u"""Calculate EndRhyme score
+
+    EndRhyme is the number of matching vowel phonemes
+    at the end of lines l and s_m, i.e., the last line of B.
+    Spaces and consonant phonemes are ignored.
+
+    Args: two strings (utf-8)
+    """
+    # Get reversed vowels
+    vowels1 = rhyme.get_phonetic_transcription_juman(line)[::-1].replace(' ', '')
+    vowels2 = rhyme.get_phonetic_transcription_juman(line2)[::-1].replace(' ', '')
+
+    # Count # of matching vowel phonemes
+    i = 0
+    n_limit = min(len(vowels1), len(vowels2))
+    n_matches = 0
+    while i < n_limit:
+        if vowels1[i] != vowels2[i]:
+            break
+        n_matches += 1
+        i += 1
+
+    return n_matches
+
+
 # 参考までにmain関数をつけておく
 def main():
     dummy_fill = u""

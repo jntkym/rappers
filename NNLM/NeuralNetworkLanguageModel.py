@@ -238,7 +238,7 @@ class NeuralNetworkLanguageModel:
                 if step % 1 == 0:
                     print "Loss in iteration %d = %f" % (step + 1, averageCost/totalBatch)
             if savePath:
-                save_path = saver.save(sess, "model")
+                save_path = saver.save(sess, savePath)
                 print "Model saved in file: ", save_path
 
     def getPermutatedBatch(self, data, labels):
