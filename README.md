@@ -95,3 +95,14 @@ if __name__ == "__main__":
             temp.pop(0)
             temp.pop(-1)
 ```
+
+# API Interface
+```
+http://lotus.kuee.kyoto-u.ac.jp/~otani/hacku15/api/get_lyric.py
+```
+
+You can feed a seed by `seed` parameter:
+
+```
+http://lotus.kuee.kyoto-u.ac.jp/~otani/hacku15/api/get_lyric.py?s=パスタ
+```
