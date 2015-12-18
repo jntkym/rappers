@@ -86,7 +86,7 @@ def calc_endrhyme_score_juman(line1, line2):
     Args: two strings (utf-8)
     """
     # Get reversed vowels
-    vowels1 = rhyme.get_phonetic_transcription_juman(line)[::-1].replace(' ', '')
+    vowels1 = rhyme.get_phonetic_transcription_juman(line1)[::-1].replace(' ', '')
     vowels2 = rhyme.get_phonetic_transcription_juman(line2)[::-1].replace(' ', '')
 
     # Count # of matching vowel phonemes

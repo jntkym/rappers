@@ -11,6 +11,7 @@ import sys
 
 from pyknp import Juman
 
+import utils
 import preprocess
 
 reload(sys)
@@ -120,16 +121,23 @@ def main(args):
     verbose = args.verbose
 
     i = 0
-    with codecs.open(args.filename, 'r', encoding='utf-8') as f:
-        for row in DictReader(f, delimiter='\t'):
+    table_term_vowel = utils.load_csv_to_dict(path.join(DIR_ROOT,
+                                                        'data/term_vowel_table.csv'))
+    with codecs.open(args.filename, encoding='utf-8') as f:
+        for line in f:
             i += 1
             if verbose:
-                if i%10 == 0: logger.info(i)
-            lines = row['text'].split('<BR>')
-            for line in lines:
-                if len(line) == 0:
-                    continue
-                result = get_phonetic_transcription(line.decode('utf-8'))
+                if i%10 == 0:
+                    logger.info(i)
+            if len(line) == 0:
+                continue
+            result1 = get_phonetic_transcription(line.decode('utf-8'),
+                                                table_term_vowel)
+            result2 = get_phonetic_transcription_juman(line.decode('utf-8'))
+            print('{}'.format(line.strip()))
+            print(''.join(result1.split()))
+            print(result2)
+            print('')
     return 0
 
 

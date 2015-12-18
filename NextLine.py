@@ -42,7 +42,9 @@ class NextLine(object):
             for i, candidate in enumerate(SENT):
                 feature_dic = get_all_features(self.history, candidate)
                 for f in ALL_FEATURES:
-                    feature_str = ["%s:%.4f" % (ALL_FEATURES.index(x) + 1, feature_dic[x]) for x in ALL_FEATURES]
+                    feature_str = ["%s:%.4f" % (ALL_FEATURES.index(x) + 1,
+                                                feature_dic[x])
+                                   for x in ALL_FEATURES]
                     feature_str = " ".join(feature_str)
 
                 FEAT.write("0 qid:0 %s\n" % (feature_str))
@@ -74,9 +76,7 @@ if __name__ == "__main__":
     for i in range(options.song_length):
         with open(SEED, 'a') as file:
             hello = NextLine(options.candidate_file, options.history, options.model_path, options.candidate_num)
-            temp = hello.predict().split()
-            temp.pop(0)
-            temp.pop(-1)
-            file.write("%s\n" % ("".join(temp)))
+            pred = hello.predict().split()
+            file.write("%s\n" % ' '.join(pred))
         file.close()
 
