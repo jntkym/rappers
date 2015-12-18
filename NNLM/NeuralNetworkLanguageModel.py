@@ -27,6 +27,7 @@ class NeuralNetworkLanguageModel:
         self.lineDelimiter = data["lineDelimiter"]
         self.wordDelimiter = data["wordDelimiter"]
         self.iteration = data["iteration"]
+        self.device = data["device"]
         self.supervisor_labels_placeholder = tf.placeholder("int32", [None])
         self.input_placeholder = tf.placeholder(
                 "float", 
@@ -220,8 +221,12 @@ class NeuralNetworkLanguageModel:
         return vectors
 
     def train(self, trainingData, labels, savePath = None):
-        with tf.Session() as sess:
-            output = self.inference(self.input_placeholder)
+        # Assume that you have 12GB of GPU memory and want to allocate ~4GB:
+        gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.25)
+
+        with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
+            with tf.device(self.device):
+                output = self.inference(self.input_placeholder)
             loss = self.loss(output, self.supervisor_labels_placeholder)
             trainer = self.training(loss)
             numExample = len(trainingData)
