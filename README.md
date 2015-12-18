@@ -106,3 +106,8 @@ You can feed a seed by `seed` parameter:
 ```
 http://lotus.kuee.kyoto-u.ac.jp/~otani/hacku15/api/get_lyric.py?s=パスタ
 ```
+
+Parameters:
+
+- `cands=<int>`: number of next line candidates
+- `length=<int>`: number of lines

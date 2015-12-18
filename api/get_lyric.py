@@ -26,6 +26,9 @@ from NextLine import NextLine
 cgitb.enable()
 sys.stdout = codecs.getwriter('utf_8')(sys.stdout)
 
+N_CANDIDATES = 100
+N_LINES = 5
+
 print("Content-type: text/plain; charset=UTF-8\r\n")
 
 if environ['REQUEST_METHOD'] == 'GET':
@@ -46,8 +49,17 @@ if environ['REQUEST_METHOD'] == 'GET':
     f_model = '/zinnia/huang/rapper/model_2573'
     f_candidates = path.join(DIR_DATA,
                              'sample_nextline_prediction_candidates.txt')
-    n_candidates = 100
-    for i in range(5):
+    try:
+        n_candidates = int(form['cands'].value)
+    except KeyError:
+        n_candidates = N_CANDIDATES
+
+    try:
+        n_lines = int(form['length'].value)
+    except KeyError:
+        n_lines = N_LINES
+
+    for i in range(n_lines):
         svm = NextLine(f_candidates, f_seed,
                        f_model, n_candidates, tmp_dir=DIR_ROOT)
         print(svm.predict())
