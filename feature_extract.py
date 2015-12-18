@@ -12,7 +12,7 @@ from make_features import *
 dummy_fill = u""
 k_prev = 5
 # add more features here, or modify the set of features.
-SCRIPT_PREFIX = "nice -n 19 python feature_extract.py --song_id %s --qid %s > /data/%s/rapper/features/%s.dat" % ('%s', '%s', getpass.getuser(), '%s')
+SCRIPT_PREFIX = "nice -n 19 python feature_extract.py --song_id %s --qid %s --address %s > /data/%s/rapper/features/%s.dat" % ('%s', '%s', '%s', getpass.getuser(), '%s')
 ALL_FEATURES = ['LineLength', 'BOW', 'BOW5', 'EndRhyme', 'EndRhyme-1', 'NN3']
 
 def get_random_line():
@@ -20,9 +20,13 @@ def get_random_line():
     data = cdb.init(data_path)
     # randomly choose a song.
     data_size = len(data)
-    song_id = randint(1, data_size)
-    thisSong = data.get("%s" % (song_id))
-    thisSong = thisSong.split('\n')
+    thisSong = None
+    while thisSong == None:
+        song_id = randint(1, data_size)
+        thisSong = data.get("%s" % (song_id))
+        if thisSong != None:
+            thisSong = thisSong.split('\n')
+
     # randomly choose a sentence.
     song_size = len(thisSong)
     sentence_id = randint(0, song_size - 1)
@@ -44,15 +48,17 @@ def pad_line(line):
         words = pad + words
     return ":".join(words)
 
-def get_NN3_feature(nextLine, history):
+def get_NN3_feature(nextLine, history, addr):
     try:
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     except:
         sys.stderr.write('Failed to create socket.\n')
         return 0
 
-    #host = '10.228.146.188'
-    host = '10.228.146.43'
+    if addr == 100:
+        host = '10.228.146.188'
+    else :
+        host = '10.228.146.43'
     port = 12345
     try:
         remote_ip = socket.gethostbyname( host )
@@ -63,7 +69,7 @@ def get_NN3_feature(nextLine, history):
     # generate message.
     testData = history + [nextLine]
     testData = map(pad_line, testData)
-    testData = "||".join(testData)
+    testData = "||".join(testData) + '\n'
     # send request.
     try:
         s.sendall(testData)
@@ -84,18 +90,18 @@ def get_NN3_feature(nextLine, history):
     #sys.stderr.write('get reply:%s\n' % (reply))
     return int(reply)
 
-def get_all_features(history, nextLine):
+def get_all_features(history, nextLine, addr):
     # add more features here.
     line_length = calc_linelength_score(nextLine, history[-1])
     BoW = calc_BoW_k_score(nextLine, history, k=1)
     BoW5 = calc_BoW_k_score(nextLine, history, k=k_prev)
     endrhyme = calc_endrhyme_score(nextLine, history[-1])
     endrhyme_1 = calc_endrhyme_score(nextLine, history[-2])
-    NN3 = get_NN3_feature(nextLine, history[-3:])
+    NN3 = get_NN3_feature(nextLine, history[-3:], addr)
     return {'LineLength' : line_length, 'BOW' : BoW, 'BOW5' : BoW5, \
             'EndRhyme' : endrhyme, 'EndRhyme-1' : endrhyme_1, 'NN3' : NN3}
 
-def print_instance_features(qid, history, nextLine, neg_num=1):
+def print_instance_features(qid, history, nextLine, addr, neg_num=1):
     # randomly sample nextline as negative examples.
     neg_lines = []
     while len(neg_lines) < neg_num:
@@ -107,7 +113,7 @@ def print_instance_features(qid, history, nextLine, neg_num=1):
         neg_lines.append(randLine)
     # print feature string for positive example.
     target = 1
-    pos_features = get_all_features(history, nextLine)
+    pos_features = get_all_features(history, nextLine, addr)
     for f in ALL_FEATURES:
         feature_str = ["%s:%.4f" % (ALL_FEATURES.index(x) + 1, pos_features[x]) for x in ALL_FEATURES]
         feature_str = " ".join(feature_str)
@@ -115,13 +121,13 @@ def print_instance_features(qid, history, nextLine, neg_num=1):
     # print feature string for negative example.
     target = 0
     for neg_line in neg_lines:
-        neg_features = get_all_features(history, neg_line)
+        neg_features = get_all_features(history, neg_line, addr)
         for f in ALL_FEATURES:
             feature_str = ["%s:%.4f" % (ALL_FEATURES.index(x) + 1, neg_features[x]) for x in ALL_FEATURES]
             feature_str = " ".join(feature_str)
         print "%s qid:%s %s" % (target, qid, feature_str)
 
-def print_song_features(song_id, start_qid):
+def print_song_features(song_id, start_qid, addr):
     data_path = "data/string_corpus.cdb"
     data = cdb.init(data_path)
     qid_now = start_qid
@@ -132,7 +138,7 @@ def print_song_features(song_id, start_qid):
         line = line.rstrip()
         if line == "":
             continue
-        print_instance_features(qid_now, prev_lines, line)
+        print_instance_features(qid_now, prev_lines, line, addr)
         # maintainance.
         qid_now += 1
         prev_lines.append(line)
@@ -146,7 +152,7 @@ def generate_task():
     qid_now = 0
     for i in range(data_size):
         # print task.
-        print SCRIPT_PREFIX % (i, qid_now, i)
+        print SCRIPT_PREFIX % (i, qid_now, 100 + i%2, i)
         thisSong = data.get("%s" % (i))
         for line in thisSong.split('\n'):
             if line.rstrip() =="":
@@ -162,7 +168,8 @@ if __name__ == '__main__':
     parser = OptionParser()
     parser.add_option("-s", "--song_id", action="store", type="int", dest='song_id')
     parser.add_option("-q", "--qid", action="store", type="int", dest='qid')
+    parser.add_option("-a", "--address", action="store", type="int", dest='addr')
     options, args = parser.parse_args()
 
     #generate_task()
-    print_song_features(options.song_id, options.qid)
+    print_song_features(options.song_id, options.qid, options.addr)

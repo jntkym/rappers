@@ -23,7 +23,7 @@ do
 done
 
 #train model
-model=/zinnia/rapper/model_NN3_small
+model=/zinnia/rapper/model_NN3
 svm_learn_light -z p $all_features_file $model 
 
 #delete files in temp directory.
