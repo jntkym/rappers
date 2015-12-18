@@ -20,7 +20,7 @@ python getlyrics.py -v > output.tsv
 
 ## Construct corpus ##
 
-1) Untar lyrics archive, then run the following command to obtain a file `data/juman_input.txt`:
+1) Extract lyrics archive, then run the following command to obtain a file `data/juman_input.txt`:
 ```
 python preprocess.py -crawl data/lyrics_shonan_s27_raw.tsv
 ```
