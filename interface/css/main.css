@@ -1,0 +1,130 @@
+html, body{
+    background: url("../images/ion.png") center center no-repeat fixed;
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    background-size: cover;
+    font-family: 'Yantramanav', sans-serif;
+}
+
+a {
+    text-decoration: none;
+}
+
+img {
+    max-width : 100% ;
+    height : auto ;
+}
+
+h1{
+    font-size: 8rem;
+    font-family: 'Oleo Script Swash Caps', cursive;
+}
+
+input#yo{
+    font-size: 3rem;
+    font-family: 'Yantramanav', sans-serif;
+    background: #000;
+    color: #fff;
+    padding-top: 0.15rem;
+    padding-bottom: 0.7rem;
+}
+
+input#seed {
+    outline: 0;
+    border: 0;
+}
+
+input{
+    margin-top: 8px;
+    font-size: 20px;
+}
+
+textarea{
+    outline: 0;
+    width: 80%;
+    min-width: 300px;
+    min-height: 300px;
+    overflow: auto;
+    font-size: 20px;
+    background-color: transparent;
+    border: 3px black solid;
+}
+textarea:focus {
+    border: 3px black solid;
+}
+
+.header {
+    text-align: center;
+}
+
+.title {
+}
+
+.description{
+}
+
+.contents{
+}
+
+.subwrapper{
+    width: 50%;
+    margin: 0 auto;
+}
+
+.balloon{
+    color: #000000;
+    position: relative;
+    left: -50px;
+    display: inline-block;
+    padding: 0 15px;
+    width: auto;
+    min-width: 115px;
+    height: 50px;
+    line-height: 32px;
+    text-align: center;
+    background: #ffffff; 
+    border: 3px solid #000000;;
+    z-index: 0;
+}
+
+.balloon:before {
+    content: "";
+    position: absolute;
+    top: -8px; left: 50%;
+    margin-left: -9px;
+    display: block;
+    width: 0px;
+    height: 0px;
+    border-style: solid;
+    border-width: 0 9px 9px 9px;
+    border-color: transparent transparent transparent transparent;
+    z-index: 0;
+}
+
+.balloon:after {
+    content: "";
+    position: absolute;
+    top: -12px; left: 50%;
+    margin-left: -10px;
+    display: block;
+    width: 0px;
+    height: 0px;
+    border-style: solid;
+    border-width: 0 10px 10px 10px;
+    border-color: transparent transparent #19283C transparent;
+    z-index: -1;
+}
+
+.caller{
+    margin-top: 10px;
+    text-align: center;
+}
+
+.result{
+    margin-top: 30px;
+}
+
+.footer{
+    text-align: center;
+}

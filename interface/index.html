@@ -1,44 +1,57 @@
 <!DOCTYPE html>
 <html lang="ja">
-<head>
-<meta charset="utf-8">
-<link rel="stylesheet" type="text/css" href="styles/main.css">
-<link href='https://fonts.googleapis.com/css?family=Oleo+Script+Swash+Caps|Yantramanav' rel='stylesheet' type='text/css'>
-<title>Mild Learning</title>
-<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
-<script src="./js/jquery.xdomainajax.js"></script>
-<script src="./js/caller.js"></script>
-</head>
-<body>
-<div class="wrapper">
-<div class="header">
-<div class="title">
-<h1>Mild Learning</h1>
-</div>
-<div class="description">
-</div>
-<p>マイルドヤンキー風歌詞自動生成ツール</p>
-<img src="images/4yankees.png">
-</div>
-<br>
-<div class="contents">
-<div class="caller">
-<form action="#">
-<div class="subwrapper">
-<div class="balloon">
-<input type="text" id="seed" placeholder="パスタ">
-</div>
-</div>
-<input id="yo" type="button" value="Yo!" onclick="get_lyrics();">
-</form>
-<div class="result">
-<textarea id="lyrics" readonly></textarea>
-</div>
-<br>
-<div class="footer">
-(c) 2015 <a href="https://github.com/jntkym/rappers">IoT_Phoks Team</a> for Hack U at Kyoto Univ.
-</div>
-</div>
-</div>
-</body>
+  <head>
+
+    <meta charset="utf-8">
+    <title>Mild Learning</title>
+    <meta name="description" content="">
+    <meta name="IoT_Phoks Team" content="Deep Lyrics Generation">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" type="text/css" href="css/normalize.css">
+    <link rel="stylesheet" type="text/css" href="css/skeleton.css">
+    <link rel="stylesheet" type="text/css" href="css/main.css">
+    <link href='https://fonts.googleapis.com/css?family=Oleo+Script+Swash+Caps|Yantramanav' rel='stylesheet' type='text/css'>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script src="./js/jquery.xdomainajax.js"></script>
+    <script src="./js/caller.js"></script>
+  </head>
+  <body>
+
+    <div class="container">
+      <div class="row">
+        <div class="header column">
+          <header class="title">
+            <h1>Mild Learning</h1>
+            <div class="description">
+              <p>マイルドヤンキー風歌詞自動生成ツール</p>
+            </div>
+            <img src="images/4yankees.png">
+          </header>
+        </div><!-- /.header -->
+      </div><!-- /.row -->
+      <div class="row">
+        <div class="contents column">
+          <div class="caller">
+            <form action="#">
+              <div class="subwrapper">
+                <div class="balloon">
+                  <input type="text" id="seed" placeholder="パスタ">
+                </div>
+              </div>
+              <input id="yo" type="button" value="Yo!" onclick="get_lyrics();">
+            </form>
+            <div class="result">
+              <textarea id="lyrics" readonly></textarea>
+            </div>
+            <br>
+          </div>
+        </div><!-- /.contents -->
+      </div><!-- /.row -->
+      <div class="row">
+        <div class="footer column">
+          (c) 2015 <a href="https://github.com/jntkym/rappers">IoT_Phoks Team</a> for Hack U at Kyoto Univ.
+        </div>
+      </div><!-- /.row -->
+    </div><!-- /.container -->
+  </body>
 </html>
