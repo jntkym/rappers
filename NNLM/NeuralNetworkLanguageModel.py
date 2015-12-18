@@ -220,7 +220,10 @@ class NeuralNetworkLanguageModel:
         return vectors
 
     def train(self, trainingData, labels, savePath = None):
-        with tf.Session() as sess:
+        # Assume that you have 12GB of GPU memory and want to allocate ~4GB:
+        gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.25)
+
+        with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
             output = self.inference(self.input_placeholder)
             loss = self.loss(output, self.supervisor_labels_placeholder)
             trainer = self.training(loss)
