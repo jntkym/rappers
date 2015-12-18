@@ -5,7 +5,7 @@ function get_lyrics(){
   $.get(url, 
   { seed: your_seed},
   function(data){
-    var content = data.responseText;
+    var content = data;
     document.getElementById('lyrics').value = content.replace(/<("[^"]*"|'[^']*'|[^'">])*>/g,'');
   });
 };
