@@ -5,10 +5,10 @@ import re
 import codecs
 import getpass
 import cdb
+import socket
 from optparse import OptionParser
 from random import randint
 from make_features import *
-#from NeuralNetworkLanguageModel import *
 dummy_fill = u""
 k_prev = 5
 # add more features here, or modify the set of features.
@@ -35,17 +35,54 @@ def get_random_line():
     else :
         return None
 
+def pad_line(line):
+    words = line.split()
+    if len(words) > 13:
+        words = words[:13]
+    if len(words) < 13:
+        pad = ['ｐ']*(13-len(words))
+        words = pad + words
+    return ":".join(words)
+
 def get_NN3_feature(nextLine, history):
-    '''
-    # preprocess og test data.
-    nextLine = re.sub(" ", "||", nextLine) 
-    history = map(lambda x: re.sub(" ", "||", x), history)
-    testData = history.append(nextLine)
-    # get NN% feature.
-    lm = NeuralNetworkLanguageMode()
-    sys.stderr.write("%s\n" % (lm.predict(testData, "/home/otsuki/nn3.model.10000")))
-    '''
-    return 0
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    except:
+        sys.stderr.write('Failed to create socket.\n')
+        return 0
+
+    #host = '10.228.146.188'
+    host = '10.228.146.43'
+    port = 12345
+    try:
+        remote_ip = socket.gethostbyname( host )
+    except socket.gaierror:
+        sys.stderr.write('Could not resolve hostname.\n')
+        return 0
+    s.connect((remote_ip , port))
+    # generate message.
+    testData = history + [nextLine]
+    testData = map(pad_line, testData)
+    testData = "||".join(testData)
+    # send request.
+    try:
+        s.sendall(testData)
+    except socket.error:
+        sys.stderr.write('Send failed.\n')
+        return 0
+    #sys.stderr.write('msg sended.\n')
+    # mark the end of message.
+    endMsg = "<END>"
+    try:
+        s.sendall(endMsg)
+    except socket.error:
+        sys.stderr.write('Send failed.\n')
+        return 0
+    #sys.stderr.write('msg ended.\n')
+    # receive result.
+    reply = s.recv(1024)
+    #sys.stderr.write('get reply:%s\n' % (reply))
+    return int(reply)
 
 def get_all_features(history, nextLine):
     # add more features here.
@@ -54,7 +91,7 @@ def get_all_features(history, nextLine):
     BoW5 = calc_BoW_k_score(nextLine, history, k=k_prev)
     endrhyme = calc_endrhyme_score(nextLine, history[-1])
     endrhyme_1 = calc_endrhyme_score(nextLine, history[-2])
-    NN3 = get_NN3_feature(nextLine, history[:-3])
+    NN3 = get_NN3_feature(nextLine, history[-3:])
     return {'LineLength' : line_length, 'BOW' : BoW, 'BOW5' : BoW5, \
             'EndRhyme' : endrhyme, 'EndRhyme-1' : endrhyme_1, 'NN3' : NN3}
 
