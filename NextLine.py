@@ -5,7 +5,6 @@ import sys
 import codecs
 from optparse import OptionParser
 from feature_extract import *
-
 from os import path
 
 class NextLine(object):
