@@ -1,16 +1,18 @@
 # -*- coding: utf-8 -*-
 from __future__ import division
 import sys
+import re
 import codecs
 import getpass
 from optparse import OptionParser
 from random import randint
 from make_features import *
+from NeuralNetworkLanguageModel import *
 dummy_fill = u""
 k_prev = 5
 # add more features here, or modify the set of features.
 SCRIPT_PREFIX = "nice -n 19 python feature_extract.py --song_id %s --qid %s > /data/%s/rapper/features/%s.dat" % ('%s', '%s', getpass.getuser(), '%s')
-ALL_FEATURES = ['LineLength', 'BOW', 'BOW5', 'EndRhyme', 'EndRhyme-1']
+ALL_FEATURES = ['LineLength', 'BOW', 'BOW5', 'EndRhyme', 'EndRhyme-1', 'NN3']
 
 def get_random_line():
     data_path = "data/lyrics_shonan_s27_raw.tsv"
@@ -39,6 +41,16 @@ def get_random_line():
             else :
                 return None
 
+def get_NN3_feature(nextLine, history):
+    # preprocess og test data.
+    nextLine = re.sub(" ", "||", nextLine) 
+    history = map(lambda x: re.sub(" ", "||", x), history)
+    testData = history.append(nextLine)
+    # get NN% feature.
+    lm = NeuralNetworkLanguageMode()
+    sys.stderr.write("%s\n" % (lm.predict(testData, "/home/otsuki/nn3.model.10000")))
+    return 0
+
 def get_all_features(history, nextLine):
     # add more features here.
     line_length = calc_linelength_score(nextLine, history[-1])
@@ -46,6 +58,7 @@ def get_all_features(history, nextLine):
     BoW5 = calc_BoW_k_score(nextLine, history, k=k_prev)
     endrhyme = calc_endrhyme_score(nextLine, history[-1])
     endrhyme_1 = calc_endrhyme_score(nextLine, history[-2])
+    NN3 = get_NN3_feature(nextLine, history[:-3])
     return {'LineLength' : line_length, 'BOW' : BoW, 'BOW5' : BoW5, \
             'EndRhyme' : endrhyme, 'EndRhyme-1' : endrhyme_1}
 
@@ -136,4 +149,3 @@ if __name__ == '__main__':
     options, args = parser.parse_args()
 
     print_song_features(options.song_id, options.qid)
-
