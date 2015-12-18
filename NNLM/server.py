@@ -1,6 +1,10 @@
+# -*- coding: utf-8 -*-
 import socket
 import time
 import tensorflow as tf
+import sys
+reload(sys)
+sys.setdefaultencoding('utf-8')
 
 from NeuralNetworkLanguageModel import *
 
@@ -9,7 +13,7 @@ class NeuralNetworkLanguageModelServer:
     def __init__(self):
         self.lm = NeuralNetworkLanguageModel()
         self.output = None
-        self.requestMax = 5
+        self.requestMax = 50
         self.port = 12345
         self.host = '0.0.0.0'
 
@@ -17,6 +21,7 @@ class NeuralNetworkLanguageModelServer:
         if self.output == None:
             raise ValueError("Model is not loaded yet!")
 
+        # print data
         vectors = self.lm.getLongVectors(data)
         output = sess.run(self.output, feed_dict={self.lm.input_placeholder: vectors}) 
         result = sess.run(tf.argmax(output,1))
@@ -42,14 +47,14 @@ class NeuralNetworkLanguageModelServer:
             data = "" 
             while True:
                 chunk = clientsocket.recv(1024)
-                print chunk
-                if chunk == "\n": # End of the data
-                # if chunk.endswith("\n"):
-                    break
-                
+                # print chunk
+                chunk = chunk.decode("utf-8")
                 data += chunk
+                if data.endswith("<END>"):
+                    break
             
-            lines = data.split("\n")
+            lines = data.split("\n")[0:-1] # Remove <END>
+            # print lines
             result = map(str, self.predict(lines, sess).tolist())
             clientsocket.send(" ".join(result))
             clientsocket.close()
