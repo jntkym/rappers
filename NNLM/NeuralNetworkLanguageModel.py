@@ -227,24 +227,24 @@ class NeuralNetworkLanguageModel:
         with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
             with tf.device(self.device):
                 output = self.inference(self.input_placeholder)
-            loss = self.loss(output, self.supervisor_labels_placeholder)
-            trainer = self.training(loss)
-            numExample = len(trainingData)
-            totalBatch = int(numExample/self.batchSize)
-            init = tf.initialize_all_variables()
-            sess.run(init)
-            saver = tf.train.Saver()
-            for step in xrange(self.iteration):
-                averageCost = 0.0
-                for _input, _labels in self.getPermutatedBatch(trainingData, labels):
-                    feed_dict={self.input_placeholder: _input, self.supervisor_labels_placeholder: _labels}
-                    sess.run(trainer, feed_dict=feed_dict)
-                    averageCost += sess.run(loss, feed_dict=feed_dict)
-                if step % 1 == 0:
-                    print "Loss in iteration %d = %f" % (step + 1, averageCost/totalBatch)
-            if savePath:
-                save_path = saver.save(sess, savePath)
-                print "Model saved in file: ", save_path
+                loss = self.loss(output, self.supervisor_labels_placeholder)
+                trainer = self.training(loss)
+                numExample = len(trainingData)
+                totalBatch = int(numExample/self.batchSize)
+                init = tf.initialize_all_variables()
+                sess.run(init)
+                saver = tf.train.Saver()
+                for step in xrange(self.iteration):
+                    averageCost = 0.0
+                    for _input, _labels in self.getPermutatedBatch(trainingData, labels):
+                        feed_dict={self.input_placeholder: _input, self.supervisor_labels_placeholder: _labels}
+                        sess.run(trainer, feed_dict=feed_dict)
+                        averageCost += sess.run(loss, feed_dict=feed_dict)
+                    if step % 1 == 0:
+                        print "Loss in iteration %d = %f" % (step + 1, averageCost/totalBatch)
+                if savePath:
+                    save_path = saver.save(sess, savePath)
+                    print "Model saved in file: ", save_path
 
     def getPermutatedBatch(self, data, labels):
         data = np.array(data)
@@ -265,12 +265,16 @@ class NeuralNetworkLanguageModel:
         data = self.getLongVectors(data)
         feed_dict={self.input_placeholder: data}
 
-        with tf.Session() as sess:
-            output = self.inference(self.input_placeholder)
-            saver = tf.train.Saver()
-            # Restore variables from disk.
-            saver.restore(sess, modelPath)
-            print "Model restored."
-            output = sess.run(output, feed_dict=feed_dict)
-            result = sess.run(tf.argmax(output,1))
-            return result
+        # Assume that you have 12GB of GPU memory and want to allocate ~4GB:
+        gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=0.25)
+
+        with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
+            with tf.device(self.device):
+                output = self.inference(self.input_placeholder)
+                saver = tf.train.Saver()
+                # Restore variables from disk.
+                saver.restore(sess, modelPath)
+                print "Model restored."
+                output = sess.run(output, feed_dict=feed_dict)
+                result = sess.run(tf.argmax(output,1))
+                return result
