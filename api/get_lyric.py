@@ -48,7 +48,7 @@ if environ['REQUEST_METHOD'] == 'GET':
 
     f_model = '/zinnia/huang/rapper/model_2573'
     f_candidates = path.join(DIR_DATA,
-                             'sample_nextline_prediction_candidates_shonan.txt')
+                             'sample_nextline_prediction_candidates_shonan_hiquality.txt')
 
     # number of candidates
     try:
