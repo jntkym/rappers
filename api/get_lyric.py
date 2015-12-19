@@ -48,12 +48,15 @@ if environ['REQUEST_METHOD'] == 'GET':
 
     f_model = '/zinnia/huang/rapper/model_2573'
     f_candidates = path.join(DIR_DATA,
-                             'sample_nextline_prediction_candidates.txt')
+                             'sample_nextline_prediction_candidates_shonan.txt')
+
+    # number of candidates
     try:
         n_candidates = int(form['cands'].value)
     except KeyError:
         n_candidates = N_CANDIDATES
 
+    # number of lines
     try:
         n_lines = int(form['length'].value)
     except KeyError:
@@ -62,7 +65,7 @@ if environ['REQUEST_METHOD'] == 'GET':
     for i in range(n_lines):
         svm = NextLine(f_candidates, f_seed,
                        f_model, n_candidates, tmp_dir=DIR_ROOT)
-        print(svm.predict())
+        print(''.join(svm.predict().split()))
 
     if seed_phrase:
         remove(f_seed)
