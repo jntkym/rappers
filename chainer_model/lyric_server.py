@@ -122,9 +122,9 @@ def generate_line(seed=None):
         probability = cuda.to_cpu(predict.data)[0].astype(np.float64)
         if args.highquality:
             sorted_prob = sorted(probability, reverse=True)
-            max_30_list = sorted_prob[:30]
+            max_10_list = sorted_prob[:10]
             for i in xrange(len(probability)):
-                if probability[i] not in max_30_list:
+                if probability[i] not in max_10_list:
                     probability[i] = 0
         probability /= np.sum(probability)
         index = np.random.choice(range(len(probability)), p=probability)
@@ -147,8 +147,9 @@ def generate_line(seed=None):
 
 
 if __name__ == '__main__':
-    HOST = None
+    requestMax = 50
     PORT = 50100
+    HOST = '0.0.0.0'
     sys.stderr.write("waiting...")
     for res in socket.getaddrinfo(HOST, PORT, socket.AF_UNSPEC,
                                   socket.SOCK_STREAM, 0, socket.AI_PASSIVE):
@@ -160,7 +161,7 @@ if __name__ == '__main__':
             continue
         try:
             s.bind(sa)
-            s.listen(5)
+            s.listen(requestMax)
         except socket.error, msg:
             s.close()
             s = None
@@ -184,8 +185,6 @@ if __name__ == '__main__':
                 # break;
         # sys.exit()
 
-    # else:
-        # print("parent process")
     while 1:
         data = conn.recv(1024)
         seed = data.split()
@@ -197,13 +196,15 @@ if __name__ == '__main__':
             os.kill(pid, 9)
             break
         else:
-            if "<unk>" in [inv_vocab[vocab[word]] for word in seed]:
-                conn.send("sorry, out of vocabulary ...")
-            else:
-                for i in xrange(args.n_lines):
-                    line = generate_line(seed)
-                    conn.send(line)
-            conn.send("finish")
+            try:
+                if "<unk>" in [inv_vocab[vocab[word]] for word in seed]:
+                    conn.send("sorry, out of vocabulary ... \n")
+                else:
+                    for i in xrange(args.n_lines):
+                        line = generate_line(seed)
+                        conn.send(line)
+            finally:
+                conn.send("finish")
 
     conn.close()
     sys.exit()

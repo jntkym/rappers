@@ -2,7 +2,7 @@
 import socket
 import sys
 
-HOST = None    # The remote host
+HOST = '0.0.0.0'    # The remote host
 PORT = 50100              # The same port as used by the server
 s = None
 for res in socket.getaddrinfo(HOST, PORT, socket.AF_UNSPEC, socket.SOCK_STREAM):

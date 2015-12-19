@@ -75,7 +75,7 @@ def make_initial_state(batchsize=1, train=True):
 def increase_prob_of_mild_words(probability):
     for word in ["テンション", "絆", "パスタ", "仲間", "お前", "親友", "連れ", "マジ", "濡れた", "家庭", "女"]:
         if probability[vocab[word]] != 0:
-            probability[vocab[word]] += 0.1
+            probability[vocab[word]] += 0.05
     
 
 def generate_line():
@@ -91,36 +91,42 @@ def generate_line():
         for key, value in state.items():
             value.data = cuda.to_gpu(value.data)
 
+    # choose first word randomly
+    state, predict = forward_one_step(cur_word, state, train=False)
+    probability = cuda.to_cpu(predict.data)[0].astype(np.float64)            
+    probability /= np.sum(probability)
+    not_first_word = [vocab[word] for word in ["が", "は", "に", "て", "で", "と", "や", "ぜ", "を", "の", "ない", "・", "っ", "</s>", "くり返し"]]
+    while(1):
+        index = np.random.choice(range(len(probability)), p=probability)
+        if index not in not_first_word:
+            break
+    cur_word = xp.array([index], dtype=np.int32)
+    print(inv_vocab[index], file=args.output_file, end=" ")
+    
     seq_len = 1
     while(1):
         state, predict = forward_one_step(cur_word, state, train=False)
         probability = cuda.to_cpu(predict.data)[0].astype(np.float64)
-        # max_30_list = []
-        # temp_max = 0
-        # for j in xrange(len(probability)):
-            # if probability[j] > temp_max:
-                # if probability[j] not in max_30_list:
-                    # temp_max = probability[j]
-            # max_30_list.append(temp_max)
         sorted_prob = sorted(probability, reverse=True)
-        max_30_list = sorted_prob[:30]
+        max_15_list = sorted_prob[:15]
         for i in xrange(len(probability)):
-            if probability[i] not in max_30_list:
+            if probability[i] not in max_15_list:
                 probability[i] = 0
         probability /= np.sum(probability)
         increase_prob_of_mild_words(probability)
         probability /= np.sum(probability)
-        index_temp = np.random.choice(range(len(probability)), p=probability)
+        index = np.random.choice(range(len(probability)), p=probability)
         # index_temp = cuda.to_cpu(predict.data)[0].astype(np.float64).argmax()
 
-        if seq_len < 10 and index_temp == 2:
+        if seq_len < 10 and index == 2:
             seq_len += 1
             continue
         else:
-            index = index_temp
+            index = index
 
         if index == 2: # 2 is assigned to </s>            
             break
+
         cur_word = xp.array([index], dtype=np.int32)
         print(inv_vocab[index], file=args.output_file, end=" ")
         
@@ -133,3 +139,5 @@ if __name__ == '__main__':
     for i in xrange(args.n_lines):
         generate_line()
         print(file=args.output_file)
+        if args.output_file != sys.stderr:
+            sys.stderr.write("\r %d /%d" %(i, args.n_lines))
