@@ -6,12 +6,15 @@ import codecs
 from optparse import OptionParser
 from feature_extract import *
 
+from os import path
+
 class NextLine(object):
-    def __init__(self, all_candidate_file, history_file, model, num):
+    def __init__(self, all_candidate_file, history_file, model, num,
+                 tmp_dir='.'):
         self.model = model
-        self.candidate_file = "./small_candidate.txt"
-        self.feature_file = "./small_feature.dat"
-        self.predict_file = "./small_predict.txt"
+        self.candidate_file = path.join(tmp_dir, "small_candidate.txt")
+        self.feature_file = path.join(tmp_dir, "small_feature.dat")
+        self.predict_file = path.join(tmp_dir, "small_predict.txt")
         self.history = []
 
         self.preprocess(all_candidate_file, history_file, num)
@@ -39,7 +42,9 @@ class NextLine(object):
             for i, candidate in enumerate(SENT):
                 feature_dic = get_all_features(self.history, candidate)
                 for f in ALL_FEATURES:
-                    feature_str = ["%s:%.4f" % (ALL_FEATURES.index(x) + 1, feature_dic[x]) for x in ALL_FEATURES]
+                    feature_str = ["%s:%.4f" % (ALL_FEATURES.index(x) + 1,
+                                                feature_dic[x])
+                                   for x in ALL_FEATURES]
                     feature_str = " ".join(feature_str)
 
                 FEAT.write("0 qid:0 %s\n" % (feature_str))
@@ -71,9 +76,7 @@ if __name__ == "__main__":
     for i in range(options.song_length):
         with open(SEED, 'a') as file:
             hello = NextLine(options.candidate_file, options.history, options.model_path, options.candidate_num)
-            temp = hello.predict().split()
-            temp.pop(0)
-            temp.pop(-1)
-            file.write("%s\n" % ("".join(temp)))
+            pred = hello.predict().split()
+            file.write("%s\n" % ' '.join(pred))
         file.close()
 

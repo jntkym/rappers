@@ -1,16 +1,24 @@
 # -*- coding: utf-8 -*-
 from __future__ import division
 from csv import DictReader
+from os import path
 import sys
 import codecs
 
 import rhyme
+import utils
 
 u"""Make features
 
 DEMO:
 python make_features.py
 """
+
+DIR_SCRIPT = path.dirname(path.abspath(__file__))
+DIR_ROOT = DIR_SCRIPT  # TODO: move this file to ./features
+
+table_term_vowel = utils.load_csv_to_dict(path.join(DIR_ROOT,
+                                                    'data/term_vowel_table.csv'))
 
 def calc_Jaccard_similarity(BoW1, BoW2):
     # 重複を許さない場合
@@ -52,8 +60,34 @@ def calc_endrhyme_score(line1, line2):
     Args: two strings (utf-8)
     """
     # Get reversed vowels
-    vowels1 = rhyme.get_phonetic_transcription(line1)[::-1].replace(' ', '')
-    vowels2 = rhyme.get_phonetic_transcription(line2)[::-1].replace(' ', '')
+    vowels1 = rhyme.get_phonetic_transcription(line1, table_term_vowel)[::-1].replace(' ', '')
+    vowels2 = rhyme.get_phonetic_transcription(line2, table_term_vowel)[::-1].replace(' ', '')
+
+    # Count # of matching vowel phonemes
+    i = 0
+    n_limit = min(len(vowels1), len(vowels2))
+    n_matches = 0
+    while i < n_limit:
+        if vowels1[i] != vowels2[i]:
+            break
+        n_matches += 1
+        i += 1
+
+    return n_matches
+
+
+def calc_endrhyme_score_juman(line1, line2):
+    u"""Calculate EndRhyme score
+
+    EndRhyme is the number of matching vowel phonemes
+    at the end of lines l and s_m, i.e., the last line of B.
+    Spaces and consonant phonemes are ignored.
+
+    Args: two strings (utf-8)
+    """
+    # Get reversed vowels
+    vowels1 = rhyme.get_phonetic_transcription_juman(line1)[::-1].replace(' ', '')
+    vowels2 = rhyme.get_phonetic_transcription_juman(line2)[::-1].replace(' ', '')
 
     # Count # of matching vowel phonemes
     i = 0

@@ -28,11 +28,16 @@ parser.add_argument('--batchsize', '-B', default=100, type=int,
                     help='batchsize')
 parser.add_argument('--vocabsize', '-V', default=100000, type=int,  # true vocab size < 100000
                     help='vocabsize')
+parser.add_argument('--corpus', '-C', default=".", type=str,  # true vocab size < 100000
+                    help='training corpus')
+parser.add_argument('--model', '-M', default="./models", type=str,  # true vocab size < 100000
+                    help='directory in which model is saved')
+
 args = parser.parse_args()
 xp = cuda.cupy if args.gpu >= 0 else np
 
-if not os.path.exists("./models"):
-    os.makedirs("./models")
+if not os.path.exists(args.model):
+    os.makedirs(args.model)
 
 n_units = 200  # number of units per layer
 bprop_len = 20   # length of truncated BPTT
@@ -94,7 +99,7 @@ def generate_batch(filename, batch_size):
             batch = [['<s>'] + x + ['</s>'] * (max_len - len(x) + 1) for x in batch]
             yield batch
 
-vocab, inv_vocab, num_lines, num_words = make_vocab('string_corpus.txt', args.vocabsize)
+vocab, inv_vocab, num_lines, num_words = make_vocab(args.corpus, args.vocabsize)
 cPickle.dump(vocab, open("vocab.pkl", "wb"))
 cPickle.dump(inv_vocab, open("inv_vocab.pkl", "wb"))
 
@@ -138,7 +143,7 @@ def make_initial_state(batchsize=args.batchsize, train=True):
             for name in ('c1', 'h1', 'c2', 'h2')}
 
 # Setup optimizer
-optimizer = optimizers.SGD(lr=1.)
+optimizer = optimizers.AdaDelta()
 optimizer.setup(model)
 
 
@@ -153,7 +158,7 @@ def main():
         opt = optimizers.AdaDelta()
         opt.setup(model)
 
-        for batch in generate_batch('string_corpus.txt', args.batchsize):
+        for batch in generate_batch(args.corpus, args.batchsize):
             batch = [[vocab[x] for x in words] for words in batch]
             K = len(batch)
             if K != args.batchsize:
@@ -186,9 +191,9 @@ def main():
         # print('  PPL      = %.10f' % math.exp(log_ppl))
 
         if (epoch + 1) % 5 == 0:
-           print("save model")
-           model_name = "models/lstm_lm.epoch{}".format(epoch+1)
-           cPickle.dump(copy.deepcopy(model).to_cpu(), open(model_name, 'wb'))
+            print("save model")
+            model_name = "%s/kokkai_lstm_lm.epoch%d" % (args.model, epoch+1)
+            cPickle.dump(copy.deepcopy(model).to_cpu(), open(model_name, 'wb'))
 
     print('training finished.')
 
