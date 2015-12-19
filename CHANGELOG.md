@@ -1,3 +1,3 @@
-# Change Log (0.0.3)
+# Change Log (1.0.0)
 
-- Implement memory efficient loading in NN5
+- First stable(?) version
