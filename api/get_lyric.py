@@ -46,7 +46,7 @@ if environ['REQUEST_METHOD'] == 'GET':
     else:
         f_seed = path.join(DIR_DATA, 'sample_lyric_seed.txt')
 
-    f_model = '/zinnia/huang/rapper/model_2573'
+    f_model = '/zinnia/huang/rapper/model_1000'
     f_candidates = path.join(DIR_DATA,
                              'sample_nextline_prediction_candidates_shonan_hiquality.txt')
 
